@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repay Your Loan – Faster Loans Uganda</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💳</text></svg>" />
+  <style>
+    .payment-tab-bar {
+      display: flex;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    .payment-tab {
+      flex: 1;
+      padding: 18px 12px;
+      text-align: center;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--gray);
+    }
+    .payment-tab:hover { background: #f8fafc; color: var(--dark); }
+    .payment-tab.active {
+      border-bottom-color: var(--primary);
+      color: var(--primary);
+      background: #f0f9f4;
+    }
+    .payment-tab .tab-icon { font-size: 1.4rem; display: block; margin-bottom: 5px; }
+    .payment-panel { display: none; }
+    .payment-panel.active { display: block; }
+
+    /* ---- Loan lookup ---- */
+    .lookup-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 28px;
+    }
+    .loan-found-card {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: var(--radius);
+      padding: 24px;
+      color: white;
+      margin-top: 20px;
+      display: none;
+    }
+    .loan-found-card.show { display: block; }
+    .loan-found-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .loan-found-item .lf-label { font-size: 0.72rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 1px; }
+    .loan-found-item .lf-value { font-size: 1rem; font-weight: 700; margin-top: 3px; }
+
+    /* ---- Card input ---- */
+    .card-visual {
+      background: linear-gradient(135deg, #1a5c2e, #2d8a48);
+      border-radius: 14px;
+      padding: 24px;
+      color: white;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-visual::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 50%;
+    }
+    .card-visual::after {
+      content: '';
+      position: absolute;
+      bottom: -50px; left: -20px;
+      width: 160px; height: 160px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .card-number-display {
+      font-size: 1.4rem;
+      letter-spacing: 4px;
+      font-weight: 700;
+      margin: 16px 0 8px;
+    }
+    .card-info-row { display: flex; justify-content: space-between; font-size: 0.75rem; opacity: 0.8; }
+
+    /* ---- Collateral ---- */
+    .collateral-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .collateral-option {
+      border: 2px solid #e8edf4;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .collateral-option:hover, .collateral-option.selected {
+      border-color: var(--accent);
+      background: rgba(245,166,35,0.06);
+    }
+    .collateral-option .co-icon { font-size: 2rem; margin-bottom: 10px; }
+    .collateral-option h4 { font-size: 0.9rem; font-weight: 700; color: var(--dark); }
+    .collateral-option p { font-size: 0.75rem; color: var(--gray); margin-top: 4px; }
+
+    .office-info-card {
+      background: linear-gradient(135deg, #f0f9f4, #e5f5ec);
+      border: 1px solid #c8e6d2;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+    }
+    .office-info-card h4 { color: var(--primary); font-size: 1rem; margin-bottom: 16px; }
+    .office-detail { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; font-size: 0.87rem; }
+    .office-detail .od-icon {
+      width: 36px; height: 36px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 1rem; flex-shrink: 0;
+    }
+
+    /* ---- Success ---- */
+    .pay-success {
+      display: none;
+      text-align: center;
+      padding: 50px 30px;
+    }
+    .pay-success.show { display: block; }
+    .pay-success .ps-icon { font-size: 4rem; animation: pop 0.5s ease; }
+    @keyframes pop {
+      0% { transform: scale(0); }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="logo-container">
+      <svg class="logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="50" fill="#1a5c2e"/>
+        <text x="50" y="38" text-anchor="middle" fill="#f5a623" font-size="22" font-weight="900" font-family="Segoe UI, sans-serif">FL</text>
+        <text x="50" y="58" text-anchor="middle" fill="#ffffff" font-size="10" font-family="Segoe UI, sans-serif">UGANDA</text>
+        <path d="M20 68 Q50 80 80 68" stroke="#f5a623" stroke-width="3" fill="none"/>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Faster Loans</span>
+        <span class="tagline">Uganda Limited</span>
+      </div>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#loans">Loan Products</a></li>
+      <li><a href="index.html#rates">Interest Rates</a></li>
+      <li><a href="apply.html">Apply Now</a></li>
+      <li><a href="payment.html" class="active">Repay Loan</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <h1>💳 Loan Repayment</h1>
+    <p>Monthly repayments are automatically deducted from your registered ATM card. Manage your card or arrange alternatives below.</p>
+    <div class="breadcrumb">
+      <a href="index.html">Home</a> › Loan Repayment
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-container" style="max-width:900px;">
+
+      <!-- HOW AUTO-DEBIT WORKS BANNER -->
+      <div style="background:linear-gradient(135deg,#0f3d1e,#1a5c2e); border-radius:14px; padding:24px 28px; color:#fff; margin-bottom:28px; display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+        <div style="font-size:2.5rem; flex-shrink:0;">🔄</div>
+        <div style="flex:1; min-width:220px;">
+          <div style="font-size:1rem; font-weight:800; margin-bottom:6px;">How Auto-Debit Repayment Works</div>
+          <div style="font-size:0.83rem; opacity:0.85; line-height:1.7;">
+            Your agreed monthly installment is <strong>automatically deducted from your registered ATM/debit card</strong> on the <strong>28th of every month</strong>.
+            You receive an <strong>SMS reminder on the 25th of every month</strong> — 3 days before each deduction. No manual payments needed — as long as your card has sufficient funds.
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; min-width:160px;">
+          <div style="background:rgba(245,166,35,0.2); border:1px solid rgba(245,166,35,0.4); border-radius:8px; padding:10px 14px; text-align:center;">
+            <div style="font-size:0.65rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px;">Deduction Day</div>
+            <div style="font-size:1.1rem; font-weight:800; color:#f5a623;">28th of month</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.08); border-radius:8px; padding:10px 14px; text-align:center;">
+            <div style="font-size:0.65rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px;">SMS Reminder</div>
+            <div style="font-size:0.9rem; font-weight:700;">25th of month</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOAN LOOKUP -->
+      <div class="lookup-card">
+        <h3 style="font-size:1rem; font-weight:700; color:var(--dark); margin-bottom:16px;">🔍 Find Your Loan Account</h3>
+        <div class="form-row" style="margin-bottom:0;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Loan Reference Number <span class="req" style="color:var(--danger);">*</span></label>
+            <input type="text" class="form-control" id="loanRef" placeholder="e.g. FL-2026-1234" />
+          </div>
+          <div class="form-group" style="margin-bottom:0; display:flex; align-items:flex-end;">
+            <button class="btn btn-green" style="width:100%; justify-content:center;" onclick="lookupLoan()">🔍 Search</button>
+          </div>
+        </div>
+        <!-- Loan found card -->
+        <div class="loan-found-card" id="loanFoundCard">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <div>
+              <div style="font-size:0.72rem; opacity:0.75; text-transform:uppercase; letter-spacing:1px;">Loan Account</div>
+              <div style="font-size:1.1rem; font-weight:800; margin-top:3px;" id="foundRef">FL-2026-1234</div>
+            </div>
+            <span class="status-badge active">Active</span>
+          </div>
+          <div class="loan-found-grid">
+            <div class="loan-found-item"><div class="lf-label">Borrower</div><div class="lf-value" id="foundName">Nakamya Prossy</div></div>
+            <div class="loan-found-item"><div class="lf-label">Outstanding Balance</div><div class="lf-value" id="foundBalance">UGX 1,850,000</div></div>
+            <div class="loan-found-item"><div class="lf-label">Monthly Installment</div><div class="lf-value" id="foundInstallment">UGX 320,000</div></div>
+            <div class="loan-found-item"><div class="lf-label">Next Deduction Date</div><div class="lf-value" id="foundDueDate">28 Oct 2026</div></div>
+          </div>
+          <!-- Registered card summary -->
+          <div style="background:rgba(255,255,255,0.12); border-radius:10px; padding:14px; margin-top:14px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <div style="font-size:1.6rem;">💳</div>
+            <div>
+              <div style="font-size:0.68rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Registered Auto-Debit Card</div>
+              <div style="font-weight:700; font-size:0.9rem;">•••• •••• •••• 4521 &nbsp;|&nbsp; Visa &nbsp;|&nbsp; Nakamya Prossy</div>
+              <div style="font-size:0.72rem; opacity:0.7; margin-top:2px;">Next auto-debit: <strong>UGX 320,000</strong> on 28 Oct 2026</div>
+            </div>
+            <button onclick="switchTab('card')" style="margin-left:auto; background:rgba(245,166,35,0.25); border:1px solid rgba(245,166,35,0.5); color:#f5a623; padding:8px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer;">Update Card</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENT METHOD TABS — 2 tabs only -->
+      <div class="payment-tab-bar">
+        <div class="payment-tab active" onclick="switchTab('card')">
+          <span class="tab-icon">💳</span>Auto-Debit Card
+        </div>
+        <div class="payment-tab" onclick="switchTab('collateral')">
+          <span class="tab-icon">🏠</span>Collateral / Office
+        </div>
+      </div>
+
+      <!-- ===== AUTO-DEBIT CARD PANEL (primary) ===== -->
+      <div class="payment-panel active" id="panel-card">
+        <div class="form-card">
+          <div class="form-card-header">
+            <h2>💳 Auto-Debit Card Management</h2>
+            <p>Update your registered ATM/debit card for automatic monthly repayment deductions.</p>
+          </div>
+          <div class="form-body">
+
+            <!-- Current card status -->
+            <div id="currentCardSection">
+              <div class="form-section-title">Currently Registered Card</div>
+              <div style="background:linear-gradient(135deg,#0f3d1e,#1a5c2e); border-radius:14px; padding:22px; color:#fff; margin-bottom:20px; position:relative; overflow:hidden;">
+                <div style="position:absolute; top:-20px; right:-20px; width:110px; height:110px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
+                <div style="position:absolute; bottom:-30px; left:-15px; width:140px; height:140px; background:rgba(255,255,255,0.04); border-radius:50%;"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                  <div style="font-size:0.62rem; opacity:0.6; letter-spacing:2px; text-transform:uppercase;">Faster Loans Uganda — Auto-Debit</div>
+                  <div style="display:flex; gap:-4px;">
+                    <div style="width:22px;height:22px;background:rgba(255,200,0,0.85);border-radius:50%;"></div>
+                    <div style="width:22px;height:22px;background:rgba(255,60,0,0.65);border-radius:50%;margin-left:-8px;"></div>
+                  </div>
+                </div>
+                <div style="font-size:1.3rem; letter-spacing:4px; font-weight:700; margin-bottom:12px;">•••• •••• •••• 4521</div>
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem;">
+                  <div><div style="opacity:0.55; font-size:0.6rem; letter-spacing:1px; margin-bottom:2px;">CARD HOLDER</div><div style="font-weight:600;">NAKAMYA PROSSY</div></div>
+                  <div style="text-align:center;"><div style="opacity:0.55; font-size:0.6rem; letter-spacing:1px; margin-bottom:2px;">EXPIRES</div><div style="font-weight:600;">09/28</div></div>
+                  <div style="text-align:right;"><div style="opacity:0.55; font-size:0.6rem; letter-spacing:1px; margin-bottom:2px;">NEXT DEBIT</div><div style="font-weight:600; color:#f5a623;">UGX 320,000</div></div>
+                </div>
+              </div>
+
+              <!-- Auto-debit schedule summary -->
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px;">
+                <div style="background:#f0f9f4; border:1px solid #c8e6d2; border-radius:10px; padding:14px; text-align:center;">
+                  <div style="font-size:0.65rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Next Deduction</div>
+                  <div style="font-size:1rem; font-weight:800; color:var(--primary);">28 Oct 2026</div>
+                </div>
+                <div style="background:#f0f9f4; border:1px solid #c8e6d2; border-radius:10px; padding:14px; text-align:center;">
+                  <div style="font-size:0.65rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Amount</div>
+                  <div style="font-size:1rem; font-weight:800; color:var(--primary);">UGX 320,000</div>
+                </div>
+                <div style="background:#f0f9f4; border:1px solid #c8e6d2; border-radius:10px; padding:14px; text-align:center;">
+                  <div style="font-size:0.65rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Remaining Months</div>
+                  <div style="font-size:1rem; font-weight:800; color:var(--primary);">8 months</div>
+                </div>
+                <div style="background:#fff8e1; border:1px solid #f9c74f; border-radius:10px; padding:14px; text-align:center;">
+                  <div style="font-size:0.65rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">SMS Reminder Sent</div>
+                  <div style="font-size:0.88rem; font-weight:700; color:#856404;">25th of every month</div>
+                </div>
+              </div>
+
+              <div style="background:rgba(39,174,96,0.08); border-left:4px solid var(--success); border-radius:0 8px 8px 0; padding:12px 16px; font-size:0.82rem; color:#1a7a3c; margin-bottom:20px;">
+                ✅ Auto-debit is <strong>active</strong>. Your card will be charged UGX 320,000 on the <strong>28th of each month</strong>. No action needed.
+              </div>
+
+              <button onclick="showUpdateCard()" class="btn btn-outline" style="color:var(--primary); border-color:var(--primary); margin-bottom:10px;">
+                🔄 Update / Change Card
+              </button>
+            </div>
+
+            <!-- UPDATE CARD FORM (hidden by default) -->
+            <div id="updateCardSection" style="display:none;">
+              <div class="form-section-title">Register New Card for Auto-Debit</div>
+              <div class="alert alert-info">🔒 Your new card will replace the current one. All future monthly deductions will be charged to the new card.</div>
+
+              <!-- Live card preview -->
+              <div style="background:linear-gradient(135deg,#0f3d1e,#1a5c2e); border-radius:14px; padding:22px; color:#fff; margin-bottom:20px; position:relative; overflow:hidden;">
+                <div style="position:absolute; top:-20px; right:-20px; width:110px; height:110px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
+                <div style="position:absolute; bottom:-30px; left:-15px; width:140px; height:140px; background:rgba(255,255,255,0.04); border-radius:50%;"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                  <div style="font-size:0.62rem; opacity:0.6; letter-spacing:2px; text-transform:uppercase;">Faster Loans Uganda</div>
+                  <div style="display:flex;">
+                    <div style="width:22px;height:22px;background:rgba(255,200,0,0.85);border-radius:50%;"></div>
+                    <div style="width:22px;height:22px;background:rgba(255,60,0,0.65);border-radius:50%;margin-left:-8px;"></div>
+                  </div>
+                </div>
+                <div id="newCardNumDisplay" style="font-size:1.25rem; letter-spacing:4px; font-weight:700; margin-bottom:12px; min-height:28px;">•••• •••• •••• ••••</div>
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem;">
+                  <div><div style="opacity:0.55; font-size:0.6rem; letter-spacing:1px; margin-bottom:2px;">CARD HOLDER</div><div id="newCardNameDisplay" style="font-weight:600; text-transform:uppercase; min-height:16px;">YOUR NAME</div></div>
+                  <div><div style="opacity:0.55; font-size:0.6rem; letter-spacing:1px; margin-bottom:2px;">EXPIRES</div><div id="newCardExpDisplay" style="font-weight:600; min-height:16px;">MM/YY</div></div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Card Number <span class="req">*</span></label>
+                <input type="text" class="form-control" id="newCardNum" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtNewCard(this)" />
+              </div>
+              <div class="form-group">
+                <label>Name on Card <span class="req">*</span></label>
+                <input type="text" class="form-control" id="newCardName" placeholder="As printed on card" style="text-transform:uppercase;"
+                  oninput="document.getElementById('newCardNameDisplay').textContent=this.value.toUpperCase()||'YOUR NAME'" />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Expiry Date <span class="req">*</span></label>
+                  <input type="text" class="form-control" id="newCardExp" placeholder="MM / YY" maxlength="7" oninput="fmtNewExpiry(this)" />
+                </div>
+                <div class="form-group">
+                  <label>CVV <span class="req">*</span></label>
+                  <input type="password" class="form-control" id="newCardCvv" placeholder="•••" maxlength="4" />
+                  <div class="form-hint">3 digits on back (Amex: 4 on front)</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center; margin-bottom:20px; flex-wrap:wrap;">
+                <span style="font-size:0.75rem; color:var(--gray);">Accepted:</span>
+                <span style="background:#1434CB; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.72rem; font-weight:700;">VISA</span>
+                <span style="background:#EB001B; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.72rem; font-weight:700;">Mastercard</span>
+                <span style="background:#003087; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.72rem; font-weight:700;">Amex</span>
+                <span style="background:#006600; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.72rem; font-weight:700;">Verve</span>
+              </div>
+
+              <!-- Consent checkbox -->
+              <div style="background:#f8fafc; border:1px solid #e8edf4; border-radius:10px; padding:16px; margin-bottom:20px;">
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                  <input type="checkbox" id="cardConsentCheck" style="width:18px; height:18px; margin-top:2px; accent-color:var(--primary); flex-shrink:0;" />
+                  <label for="cardConsentCheck" style="font-size:0.83rem; color:var(--dark); line-height:1.6; cursor:pointer;">
+                    I authorise <strong>Faster Loans Uganda Limited</strong> to automatically debit the agreed monthly installment from the card above on the <strong>28th of every month</strong>, for the remaining loan tenure. I understand I will receive an SMS reminder on the <strong>25th of every month</strong> — 3 days before each deduction.
+                  </label>
+                </div>
+              </div>
+
+              <div class="pay-success" id="card-update-success">
+                <div class="ps-icon">💳✅</div>
+                <h3 style="color:var(--success); font-size:1.4rem; margin:12px 0;">Card Updated!</h3>
+                <p style="color:var(--gray);">Your new card has been registered for auto-debit. Future monthly installments will be charged to it.</p>
+                <p style="margin-top:8px; font-size:0.85rem; color:var(--gray);">Confirmation ID: <strong id="cardUpdateId">UPD-XXXX</strong></p>
+                <a href="dashboard.html" class="btn btn-green" style="margin-top:20px;">View Dashboard</a>
+              </div>
+              <div class="form-actions" id="card-update-actions">
+                <button class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef;" onclick="hideUpdateCard()">← Cancel</button>
+                <button class="btn btn-primary btn-lg" onclick="saveNewCard()">🔒 Save &amp; Activate Card</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== COLLATERAL / OFFICE PANEL ===== -->
+      <div class="payment-panel" id="panel-collateral">
+        <div class="form-card">
+          <div class="form-card-header">
+            <h2>🏠 Collateral & Office Payment</h2>
+            <p>Visit our offices to bring collateral, pay cash, or discuss repayment plans with our team.</p>
+          </div>
+          <div class="form-body">
+            <div class="form-section-title">Payment / Arrangement Options</div>
+            <div class="collateral-options">
+              <div class="collateral-option selected" onclick="selectCollateral(this)">
+                <div class="co-icon">💵</div>
+                <h4>Cash at Office</h4>
+                <p>Visit our branch and pay cash directly at the cashier desk</p>
+              </div>
+              <div class="collateral-option" onclick="selectCollateral(this)">
+                <div class="co-icon">🚗</div>
+                <h4>Vehicle Logbook</h4>
+                <p>Bring your vehicle logbook as additional collateral for extensions</p>
+              </div>
+              <div class="collateral-option" onclick="selectCollateral(this)">
+                <div class="co-icon">🏠</div>
+                <h4>Land / Property</h4>
+                <p>Offer land title or property documents for loan restructuring</p>
+              </div>
+              <div class="collateral-option" onclick="selectCollateral(this)">
+                <div class="co-icon">📋</div>
+                <h4>Repayment Plan</h4>
+                <p>Speak to an officer about extending or restructuring your loan</p>
+              </div>
+            </div>
+
+            <div class="office-info-card">
+              <h4>🏢 Our Office Locations</h4>
+              <div class="office-detail">
+                <div class="od-icon">📍</div>
+                <div>
+                  <strong>Head Office – Kampala</strong><br/>
+                  Plot 42, Kampala Road, Kampala CBD<br/>
+                  <em style="font-size:0.8rem; color:var(--gray);">Mon–Fri: 8:00am–6:00pm | Sat: 9:00am–2:00pm</em>
+                </div>
+              </div>
+              <div class="office-detail">
+                <div class="od-icon">📍</div>
+                <div>
+                  <strong>Entebbe Branch</strong><br/>
+                  Plot 8, Kampala–Entebbe Road, Entebbe Town<br/>
+                  <em style="font-size:0.8rem; color:var(--gray);">Mon–Fri: 8:00am–5:00pm</em>
+                </div>
+              </div>
+              <div class="office-detail">
+                <div class="od-icon">📍</div>
+                <div>
+                  <strong>Mbarara Branch</strong><br/>
+                  Plot 17, High Street, Mbarara City<br/>
+                  <em style="font-size:0.8rem; color:var(--gray);">Mon–Fri: 8:00am–5:00pm</em>
+                </div>
+              </div>
+              <div class="office-detail">
+                <div class="od-icon">📞</div>
+                <div>
+                  <strong>Call Before Visiting:</strong><br/>
+                  +256 700 123 456 | +256 772 987 654<br/>
+                  <em style="font-size:0.8rem; color:var(--gray);">We can arrange a home collection for large amounts</em>
+                </div>
+              </div>
+            </div>
+
+            <hr class="form-divider"/>
+            <div class="form-section-title">Schedule a Visit</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" class="form-control" placeholder="Full name" />
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" class="form-control" placeholder="0772 000 000" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Preferred Date</label>
+                <input type="date" class="form-control" id="visitDate" />
+              </div>
+              <div class="form-group">
+                <label>Preferred Time</label>
+                <select class="form-control">
+                  <option>8:00am – 10:00am</option>
+                  <option>10:00am – 12:00pm</option>
+                  <option>12:00pm – 2:00pm</option>
+                  <option>2:00pm – 4:00pm</option>
+                  <option>4:00pm – 6:00pm</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Purpose of Visit</label>
+              <select class="form-control">
+                <option>Cash Payment</option>
+                <option>Bring Collateral Documents</option>
+                <option>Loan Restructuring Request</option>
+                <option>General Inquiry</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Additional Notes</label>
+              <textarea class="form-control" rows="3" placeholder="Any additional information..."></textarea>
+            </div>
+            <div class="pay-success" id="collateral-success">
+              <div class="ps-icon">📅✅</div>
+              <h3 style="color:var(--success); font-size:1.4rem; margin:12px 0;">Visit Scheduled!</h3>
+              <p style="color:var(--gray);">We'll send you an SMS confirmation. Our team will be ready for you.</p>
+              <a href="dashboard.html" class="btn btn-green" style="margin-top:20px;">View Dashboard</a>
+            </div>
+            <div class="form-actions" id="collateral-form-actions">
+              <button class="btn btn-primary btn-lg" onclick="scheduleVisit()">📅 Schedule My Visit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-bottom" style="max-width:1200px; margin:0 auto; padding:20px 40px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <span>© 2026 Faster Loans Uganda Limited. All rights reserved. Licensed by UMRA.</span>
+      <div style="display:flex; gap:20px;">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms &amp; Conditions</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    /* ---- Tab switching — 2 tabs only ---- */
+    function switchTab(tab) {
+      const tabs = ['card','collateral'];
+      document.querySelectorAll('.payment-tab').forEach((t,i) => {
+        t.classList.toggle('active', tabs[i] === tab);
+      });
+      document.querySelectorAll('.payment-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+
+    /* ---- Loan lookup ---- */
+    function lookupLoan() {
+      const ref = document.getElementById('loanRef').value.trim();
+      if (!ref) { alert('Please enter your loan reference number.'); return; }
+      const refNum = ref.toUpperCase().startsWith('FL') ? ref.toUpperCase() : 'FL-2026-' + Math.floor(1000 + Math.random()*9000);
+      document.getElementById('foundRef').textContent        = refNum;
+      document.getElementById('foundName').textContent       = 'Nakamya Prossy';
+      document.getElementById('foundBalance').textContent    = 'UGX ' + (1200000 + Math.floor(Math.random()*2000000)).toLocaleString();
+      document.getElementById('foundInstallment').textContent= 'UGX 320,000';
+      document.getElementById('foundDueDate').textContent    = '28 Oct 2026';
+      document.getElementById('loanFoundCard').classList.add('show');
+    }
+
+    /* ---- Show / hide update card form ---- */
+    function showUpdateCard() {
+      document.getElementById('currentCardSection').style.display = 'none';
+      document.getElementById('updateCardSection').style.display  = 'block';
+      window.scrollTo({ top: 400, behavior: 'smooth' });
+    }
+    function hideUpdateCard() {
+      document.getElementById('updateCardSection').style.display  = 'none';
+      document.getElementById('currentCardSection').style.display = 'block';
+    }
+
+    /* ---- Save new auto-debit card ---- */
+    function saveNewCard() {
+      const num  = document.getElementById('newCardNum').value.replace(/\s/g,'');
+      const name = document.getElementById('newCardName').value.trim();
+      const exp  = document.getElementById('newCardExp').value;
+      const cvv  = document.getElementById('newCardCvv').value;
+      const consent = document.getElementById('cardConsentCheck').checked;
+
+      if (!num.match(/^\d{16}$/))        { alert('Please enter a valid 16-digit card number.'); return; }
+      if (!name)                          { alert('Please enter the name on the card.'); return; }
+      if (!exp.match(/\d{2}\s\/\s\d{2}/)) { alert('Please enter a valid expiry date (MM / YY).'); return; }
+      if (!cvv.match(/^\d{3,4}$/))        { alert('Please enter a valid CVV.'); return; }
+      if (!consent)                       { alert('Please tick the auto-debit authorisation checkbox.'); return; }
+
+      document.getElementById('cardUpdateId').textContent = 'UPD-' + Math.floor(10000 + Math.random()*90000);
+      document.getElementById('card-update-success').classList.add('show');
+      document.getElementById('card-update-actions').style.display = 'none';
+    }
+
+    /* ---- Live card number formatting ---- */
+    function fmtNewCard(input) {
+      let val = input.value.replace(/\D/g,'').substring(0,16);
+      val = val.replace(/(.{4})/g,'$1 ').trim();
+      input.value = val;
+      document.getElementById('newCardNumDisplay').textContent = val || '•••• •••• •••• ••••';
+    }
+    function fmtNewExpiry(input) {
+      let val = input.value.replace(/\D/g,'');
+      if (val.length >= 2) val = val.substring(0,2) + ' / ' + val.substring(2,4);
+      input.value = val;
+      document.getElementById('newCardExpDisplay').textContent = val || 'MM/YY';
+    }
+
+    /* ---- Collateral visit scheduler ---- */
+    function selectCollateral(el) {
+      document.querySelectorAll('.collateral-option').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+    function scheduleVisit() {
+      const date = document.getElementById('visitDate').value;
+      if (!date) { alert('Please select a preferred visit date.'); return; }
+      document.getElementById('collateral-success').classList.add('show');
+      document.getElementById('collateral-form-actions').style.display = 'none';
+    }
+
+    /* ---- Copy to clipboard ---- */
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        btn.style.background = 'var(--success)';
+        btn.style.color = '#fff';
+        setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = ''; btn.style.color = ''; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

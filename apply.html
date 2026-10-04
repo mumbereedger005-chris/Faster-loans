@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apply for a Loan – Faster Loans Uganda</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>" />
+  <style>
+    /* ---- Stepper ---- */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 40px;
+    }
+    .step-bubble {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #e8edf4;
+      color: #8a9ab0;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      border: 2px solid #dde4ef;
+    }
+    .step-circle.done {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+    }
+    .step-circle.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 5px rgba(26,92,46,0.15);
+    }
+    .step-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #8a9ab0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .step-label.active { color: var(--primary); }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #dde4ef;
+      max-width: 80px;
+      margin-bottom: 22px;
+    }
+    .step-line.done { background: var(--success); }
+
+    /* ---- Loan type selector ---- */
+    .loan-type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .loan-type-btn {
+      border: 2px solid #e8edf4;
+      border-radius: 10px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fafbfd;
+    }
+    .loan-type-btn:hover {
+      border-color: var(--primary);
+      background: #f0f9f4;
+    }
+    .loan-type-btn.selected {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #f0f9f4, #e5f5ec);
+    }
+    .loan-type-btn .lt-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .loan-type-btn .lt-name { font-size: 0.82rem; font-weight: 700; color: var(--dark); }
+    .loan-type-btn .lt-range { font-size: 0.7rem; color: var(--gray); margin-top: 3px; }
+
+    /* ---- Document checklist ---- */
+    .doc-checklist {
+      background: #f0f9f4;
+      border: 1px solid #c8e6d2;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .doc-checklist h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .doc-checklist ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .doc-checklist ul li {
+      font-size: 0.82rem;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ---- Step panels ---- */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    /* ---- Amount slider visual ---- */
+    .amount-display {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 10px;
+      color: white;
+      margin-bottom: 20px;
+    }
+    .amount-display .amount-val {
+      font-size: 2rem;
+      font-weight: 800;
+    }
+    .amount-display .amount-label {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+      margin-top: 8px;
+    }
+
+    /* ---- Success overlay ---- */
+    .success-overlay {
+      display: none;
+      text-align: center;
+      padding: 60px 40px;
+    }
+    .success-overlay.show { display: block; }
+    .success-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      animation: pop 0.5s ease;
+    }
+    @keyframes pop {
+      0% { transform: scale(0); }
+      70% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .success-overlay h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--success);
+      margin-bottom: 12px;
+    }
+    .success-overlay p {
+      color: var(--gray);
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+    .ref-number {
+      display: inline-block;
+      background: #f0f9f4;
+      border: 2px solid #c8e6d2;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 1.1rem;
+      padding: 10px 26px;
+      border-radius: 8px;
+      margin: 16px 0;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="logo-container">
+      <svg class="logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="50" fill="#1a5c2e"/>
+        <text x="50" y="38" text-anchor="middle" fill="#f5a623" font-size="22" font-weight="900" font-family="Segoe UI, sans-serif">FL</text>
+        <text x="50" y="58" text-anchor="middle" fill="#ffffff" font-size="10" font-family="Segoe UI, sans-serif">UGANDA</text>
+        <path d="M20 68 Q50 80 80 68" stroke="#f5a623" stroke-width="3" fill="none"/>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Faster Loans</span>
+        <span class="tagline">Uganda Limited</span>
+      </div>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#loans">Loan Products</a></li>
+      <li><a href="index.html#rates">Interest Rates</a></li>
+      <li><a href="index.html#how">How It Works</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+      <li><a href="apply.html" class="nav-cta active">Apply Now</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <h1>Apply for a Loan</h1>
+    <p>Complete the form below to get your loan approved. It takes less than 5 minutes.</p>
+    <div class="breadcrumb">
+      <a href="index.html">Home</a> › Apply Online
+    </div>
+  </div>
+
+  <!-- FORM SECTION -->
+  <div class="form-section">
+    <div class="form-container">
+
+      <!-- STEPPER -->
+      <div class="stepper" id="stepper">
+        <div class="step-bubble">
+          <div class="step-circle active" id="sc1">1</div>
+          <div class="step-label active" id="sl1">Loan Type</div>
+        </div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-bubble">
+          <div class="step-circle" id="sc2">2</div>
+          <div class="step-label" id="sl2">Personal Info</div>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-bubble">
+          <div class="step-circle" id="sc3">3</div>
+          <div class="step-label" id="sl3">Employment</div>
+        </div>
+        <div class="step-line" id="line3"></div>
+        <div class="step-bubble">
+          <div class="step-circle" id="sc4">4</div>
+          <div class="step-label" id="sl4">Documents</div>
+        </div>
+        <div class="step-line" id="line4"></div>
+        <div class="step-bubble">
+          <div class="step-circle" id="sc5">5</div>
+          <div class="step-label" id="sl5">Review</div>
+        </div>
+      </div>
+
+      <div class="form-card">
+
+        <!-- SUCCESS STATE -->
+        <div class="success-overlay" id="successOverlay">
+          <div class="success-icon">🎉</div>
+          <h2>Application Submitted!</h2>
+          <p>Your loan application has been received successfully.</p>
+          <p>Your reference number is:</p>
+          <div class="ref-number" id="refNumber">FL-2026-XXXX</div>
+          <p style="margin-bottom:28px; font-size:0.85rem;">Our team will review your application and contact you within <strong>2–24 hours</strong> via SMS and email.</p>
+          <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+            <a href="dashboard.html" class="btn btn-green">📊 Track Application</a>
+            <a href="index.html" class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef;">🏠 Back to Home</a>
+          </div>
+        </div>
+
+        <!-- STEP 1: LOAN TYPE & AMOUNT -->
+        <div class="step-panel active" id="panel1">
+          <div class="form-card-header">
+            <h2>Step 1 — Select Loan Type & Amount</h2>
+            <p>Choose the type of loan you need and specify the amount.</p>
+          </div>
+          <div class="form-body">
+            <div class="form-section-title">Loan Type</div>
+            <div class="loan-type-grid" id="loanTypeGrid">
+              <div class="loan-type-btn selected" data-type="personal" onclick="selectLoanType(this)">
+                <div class="lt-icon">👤</div>
+                <div class="lt-name">Personal</div>
+                <div class="lt-range">250K – 5M</div>
+              </div>
+              <div class="loan-type-btn" data-type="business" onclick="selectLoanType(this)">
+                <div class="lt-icon">🏢</div>
+                <div class="lt-name">Business</div>
+                <div class="lt-range">1M – 30M</div>
+              </div>
+              <div class="loan-type-btn" data-type="emergency" onclick="selectLoanType(this)">
+                <div class="lt-icon">🚨</div>
+                <div class="lt-name">Emergency</div>
+                <div class="lt-range">250K – 2M</div>
+              </div>
+              <div class="loan-type-btn" data-type="education" onclick="selectLoanType(this)">
+                <div class="lt-icon">🎓</div>
+                <div class="lt-name">Education</div>
+                <div class="lt-range">500K – 10M</div>
+              </div>
+              <div class="loan-type-btn" data-type="logbook" onclick="selectLoanType(this)">
+                <div class="lt-icon">🚗</div>
+                <div class="lt-name">Logbook</div>
+                <div class="lt-range">1M – 20M</div>
+              </div>
+              <div class="loan-type-btn" data-type="mortgage" onclick="selectLoanType(this)">
+                <div class="lt-icon">🏠</div>
+                <div class="lt-name">Mortgage</div>
+                <div class="lt-range">5M – 30M</div>
+              </div>
+            </div>
+            <hr class="form-divider"/>
+            <div class="form-section-title">Loan Amount</div>
+            <div class="amount-display">
+              <div class="amount-val" id="amountDisplay">UGX 1,000,000</div>
+              <div class="amount-label">Requested Amount</div>
+            </div>
+            <input type="range" id="amountSlider" min="250000" max="5000000" step="50000" value="1000000" oninput="updateAmount(this.value)" />
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--gray); margin-top:6px;">
+              <span id="sliderMin">UGX 250,000</span>
+              <span id="sliderMax">UGX 5,000,000</span>
+            </div>
+            <hr class="form-divider"/>
+            <div class="form-section-title">Repayment Period</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Repayment Duration <span class="req">*</span></label>
+                <select class="form-control" id="tenure" onchange="recalcRepayment()">
+                  <option value="">-- Select tenure --</option>
+                  <option value="1">1 Month</option>
+                  <option value="2">2 Months</option>
+                  <option value="3">3 Months</option>
+                  <option value="6">6 Months</option>
+                  <option value="12">12 Months</option>
+                  <option value="18">18 Months</option>
+                  <option value="24">24 Months</option>
+                  <option value="36">36 Months</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Purpose of Loan <span class="req">*</span></label>
+                <select class="form-control" id="purpose">
+                  <option value="">-- Select purpose --</option>
+                  <option>Business expansion</option>
+                  <option>Stock / inventory</option>
+                  <option>Medical expenses</option>
+                  <option>School fees</option>
+                  <option>Home improvement</option>
+                  <option>Salary advance</option>
+                  <option>Agricultural input</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- ===== LIVE MONTHLY REPAYMENT BREAKDOWN ===== -->
+            <div id="repaymentBreakdown" style="display:none; margin-bottom:8px;">
+              <div style="background:linear-gradient(135deg,#0f3d1e,#1a5c2e); border-radius:14px; padding:24px; color:#fff; margin-bottom:4px;">
+                <div style="font-size:0.72rem; opacity:0.7; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;">📅 Monthly Auto-Debit Schedule</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                  <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:14px; text-align:center;">
+                    <div style="font-size:0.68rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Monthly Installment</div>
+                    <div id="rb-monthly" style="font-size:1.7rem; font-weight:900; color:#f5a623; line-height:1;">—</div>
+                    <div style="font-size:0.7rem; opacity:0.6; margin-top:3px;">auto-debited every month</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:14px; text-align:center;">
+                    <div style="font-size:0.68rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Total Repayment</div>
+                    <div id="rb-total" style="font-size:1.7rem; font-weight:900; color:#fff; line-height:1;">—</div>
+                    <div style="font-size:0.7rem; opacity:0.6; margin-top:3px;">over <span id="rb-months">—</span> months</div>
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                  <div style="text-align:center;">
+                    <div style="font-size:0.65rem; opacity:0.6; margin-bottom:3px;">Loan Amount</div>
+                    <div id="rb-principal" style="font-size:0.88rem; font-weight:700;">—</div>
+                  </div>
+                  <div style="text-align:center;">
+                    <div style="font-size:0.65rem; opacity:0.6; margin-bottom:3px;">Total Interest</div>
+                    <div id="rb-interest" style="font-size:0.88rem; font-weight:700; color:#fbbf24;">—</div>
+                  </div>
+                  <div style="text-align:center;">
+                    <div style="font-size:0.65rem; opacity:0.6; margin-bottom:3px;">Monthly Rate</div>
+                    <div id="rb-rate" style="font-size:0.88rem; font-weight:700;">—</div>
+                  </div>
+                </div>
+              </div>
+              <!-- Mini amortization preview -->
+              <div id="rb-schedule-wrap" style="background:#fff; border:1px solid #e8edf4; border-radius:12px; overflow:hidden; margin-top:0;">
+                <div style="padding:12px 16px; background:#f8fafc; border-bottom:1px solid #eef2f7; font-size:0.82rem; font-weight:700; color:var(--dark);">
+                  📋 Repayment Schedule Preview
+                  <span style="font-size:0.72rem; color:#8a9ab0; font-weight:400; margin-left:6px;">(first 4 months shown)</span>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table style="width:100%; border-collapse:collapse; font-size:0.8rem; min-width:420px;">
+                    <thead>
+                      <tr style="background:#f0f9f4;">
+                        <th style="padding:8px 14px; text-align:left; font-size:0.7rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:0.8px;">#</th>
+                        <th style="padding:8px 14px; text-align:left; font-size:0.7rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:0.8px;">Due Date</th>
+                        <th style="padding:8px 14px; text-align:right; font-size:0.7rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:0.8px;">Principal</th>
+                        <th style="padding:8px 14px; text-align:right; font-size:0.7rem; color:#8a9ab0; text-transform:uppercase; letter-spacing:0.8px;">Interest</th>
+                        <th style="padding:8px 14px; text-align:right; font-size:0.7rem; color:#1a5c2e; text-transform:uppercase; letter-spacing:0.8px; font-weight:800;">Monthly Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rb-schedule-body"></tbody>
+                  </table>
+                </div>
+                <div id="rb-schedule-more" style="padding:10px 14px; background:#f8fafc; font-size:0.75rem; color:#8a9ab0; text-align:center; display:none; border-top:1px solid #eef2f7;">
+                  + <span id="rb-remaining-count"></span> more months — full schedule available in your dashboard after approval
+                </div>
+              </div>
+              <div style="background:rgba(245,166,35,0.1); border:1px solid rgba(245,166,35,0.3); border-radius:8px; padding:12px 14px; font-size:0.78rem; color:#92650a; margin-top:10px;">
+                ⚡ <strong>Auto-Debit:</strong> The monthly installment will be automatically charged to your registered ATM/debit card on the <strong>28th of every month</strong>. You will receive an SMS reminder on the <strong>25th of every month</strong>, 3 days before each deduction.
+              </div>
+            </div>
+            <!-- placeholder when tenure not yet chosen -->
+            <div id="repaymentPlaceholder" style="background:#f8fafc; border:2px dashed #dde4ef; border-radius:12px; padding:20px; text-align:center; color:#8a9ab0; font-size:0.87rem; margin-bottom:8px;">
+              📊 Select a loan amount and repayment duration above to see your monthly payment breakdown
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary btn-lg" onclick="goToStep(2)">Next → Personal Info</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: PERSONAL INFORMATION -->
+        <div class="step-panel" id="panel2">
+          <div class="form-card-header">
+            <h2>Step 2 — Personal Information</h2>
+            <p>Provide your personal details exactly as they appear on your National ID.</p>
+          </div>
+          <div class="form-body">
+            <div class="form-section-title">Identity Details</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name <span class="req">*</span></label>
+                <input type="text" class="form-control" id="firstName" placeholder="e.g. Nakamya" />
+              </div>
+              <div class="form-group">
+                <label>Last Name <span class="req">*</span></label>
+                <input type="text" class="form-control" id="lastName" placeholder="e.g. Prossy" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Date of Birth <span class="req">*</span></label>
+                <input type="date" class="form-control" id="dob" />
+              </div>
+              <div class="form-group">
+                <label>Gender <span class="req">*</span></label>
+                <select class="form-control" id="gender">
+                  <option value="">-- Select --</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Prefer not to say</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>National ID Number <span class="req">*</span></label>
+                <input type="text" class="form-control" id="nationalId" placeholder="e.g. CM90100012345XXXX" maxlength="20" />
+              </div>
+              <div class="form-group">
+                <label>Nationality</label>
+                <select class="form-control" id="nationality">
+                  <option value="Ugandan" selected>Ugandan</option>
+                  <option>Kenyan</option>
+                  <option>Tanzanian</option>
+                  <option>Rwandan</option>
+                  <option>South Sudanese</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <hr class="form-divider"/>
+            <div class="form-section-title">Contact Details</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Phone Number <span class="req">*</span></label>
+                <input type="tel" class="form-control" id="phone" placeholder="e.g. 0772 123 456" />
+                <div class="form-hint">MTN or Airtel number preferred for disbursement</div>
+              </div>
+              <div class="form-group">
+                <label>Alternate Phone</label>
+                <input type="tel" class="form-control" id="phone2" placeholder="e.g. 0700 987 654" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email Address <span class="req">*</span></label>
+                <input type="email" class="form-control" id="email" placeholder="e.g. nakamya@email.com" />
+              </div>
+              <div class="form-group">
+                <label>District of Residence <span class="req">*</span></label>
+                <select class="form-control" id="district">
+                  <option value="">-- Select district --</option>
+                  <option>Kampala</option>
+                  <option>Wakiso</option>
+                  <option>Mukono</option>
+                  <option>Jinja</option>
+                  <option>Mbale</option>
+                  <option>Gulu</option>
+                  <option>Mbarara</option>
+                  <option>Lira</option>
+                  <option>Fort Portal</option>
+                  <option>Kabale</option>
+                  <option>Masaka</option>
+                  <option>Arua</option>
+                  <option>Soroti</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Physical Address <span class="req">*</span></label>
+              <input type="text" class="form-control" id="address" placeholder="e.g. Plot 14, Kibuye, Kampala" />
+            </div>
+            <hr class="form-divider"/>
+            <div class="form-section-title">Next of Kin</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Next of Kin Name <span class="req">*</span></label>
+                <input type="text" class="form-control" id="kinName" placeholder="Full name" />
+              </div>
+              <div class="form-group">
+                <label>Relationship <span class="req">*</span></label>
+                <select class="form-control" id="kinRelation">
+                  <option value="">-- Select --</option>
+                  <option>Spouse</option>
+                  <option>Parent</option>
+                  <option>Sibling</option>
+                  <option>Child</option>
+                  <option>Friend</option>
+                  <option>Colleague</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Next of Kin Phone <span class="req">*</span></label>
+              <input type="tel" class="form-control" id="kinPhone" placeholder="e.g. 0756 000 000" />
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef;" onclick="goToStep(1)">← Back</button>
+              <button class="btn btn-primary btn-lg" onclick="goToStep(3)">Next → Employment</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: EMPLOYMENT & FINANCES -->
+        <div class="step-panel" id="panel3">
+          <div class="form-card-header">
+            <h2>Step 3 — Employment & Financial Details</h2>
+            <p>Tell us about your income so we can determine the right loan amount for you.</p>
+          </div>
+          <div class="form-body">
+            <div class="form-section-title">Employment Details</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Employment Status <span class="req">*</span></label>
+                <select class="form-control" id="empStatus" onchange="toggleEmpFields()">
+                  <option value="">-- Select --</option>
+                  <option value="employed">Formally Employed</option>
+                  <option value="self">Self-Employed / Business Owner</option>
+                  <option value="farmer">Farmer / Agri-business</option>
+                  <option value="student">Student</option>
+                  <option value="unemployed">Unemployed / Other</option>
+                </select>
+              </div>
+              <div class="form-group" id="employerGroup">
+                <label>Employer / Business Name</label>
+                <input type="text" class="form-control" id="employer" placeholder="e.g. Ministry of Health / Nakamya Stores" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Monthly Income (UGX) <span class="req">*</span></label>
+                <select class="form-control" id="income">
+                  <option value="">-- Select range --</option>
+                  <option>Below 500,000</option>
+                  <option>500,000 – 1,000,000</option>
+                  <option>1,000,001 – 3,000,000</option>
+                  <option>3,000,001 – 5,000,000</option>
+                  <option>5,000,001 – 10,000,000</option>
+                  <option>Above 10,000,000</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Years at Current Job / Business</label>
+                <select class="form-control" id="yearsEmp">
+                  <option value="">-- Select --</option>
+                  <option>Less than 1 year</option>
+                  <option>1 – 2 years</option>
+                  <option>3 – 5 years</option>
+                  <option>5 – 10 years</option>
+                  <option>More than 10 years</option>
+                </select>
+              </div>
+            </div>
+            <hr class="form-divider"/>
+            <div class="form-section-title">Disbursement &amp; Repayment Method</div>
+            <div class="alert alert-info">
+              ℹ Your approved loan will be sent to your bank account. Monthly repayments will be automatically deducted from your ATM/debit card on the <strong>28th of every month</strong>.
+            </div>
+
+            <!-- Disbursement bank account -->
+            <div style="background:#f8fafc; border:1px solid #e8edf4; border-radius:10px; padding:20px; margin-bottom:20px;">
+              <div style="font-size:0.88rem; font-weight:700; color:var(--primary); margin-bottom:14px;">🏦 Loan Disbursement — Bank Account</div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Bank Name <span class="req">*</span></label>
+                  <select class="form-control" id="bankName">
+                    <option value="">-- Select bank --</option>
+                    <option>Stanbic Bank Uganda</option>
+                    <option>Centenary Bank</option>
+                    <option>DFCU Bank</option>
+                    <option>Equity Bank Uganda</option>
+                    <option>Absa Bank Uganda</option>
+                    <option>Post Bank Uganda</option>
+                    <option>Housing Finance Bank</option>
+                    <option>Orient Bank</option>
+                    <option>Pride Microfinance</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Account Number <span class="req">*</span></label>
+                  <input type="text" class="form-control" id="bankAcc" placeholder="e.g. 9030012345" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:16px; margin-bottom:0;">
+                <label>Account Holder Name <span class="req">*</span></label>
+                <input type="text" class="form-control" id="bankAccName" placeholder="Must match your National ID name" />
+                <div class="form-hint">The loan funds will be deposited into this account within 24 hours of approval.</div>
+              </div>
+            </div>
+
+            <!-- ATM card auto-debit registration -->
+            <div style="background:#fff; border:2px solid #1a5c2e; border-radius:12px; overflow:hidden; margin-bottom:20px;">
+              <div style="background:linear-gradient(135deg,#1a5c2e,#2d8a48); padding:16px 20px; color:#fff;">
+                <div style="font-size:0.95rem; font-weight:700; margin-bottom:4px;">💳 ATM / Debit Card — Auto-Debit Registration</div>
+                <div style="font-size:0.78rem; opacity:0.8;">Your monthly repayment will be automatically charged to this card on the <strong>28th of every month</strong>.</div>
+              </div>
+              <div style="padding:20px;">
+                <!-- Visual card preview -->
+                <div style="background:linear-gradient(135deg,#0f3d1e,#1a5c2e); border-radius:12px; padding:20px; color:#fff; margin-bottom:18px; position:relative; overflow:hidden;">
+                  <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.06); border-radius:50%;"></div>
+                  <div style="position:absolute; bottom:-30px; left:-10px; width:130px; height:130px; background:rgba(255,255,255,0.04); border-radius:50%;"></div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <div style="font-size:0.65rem; opacity:0.6; letter-spacing:2px; text-transform:uppercase;">Faster Loans Uganda</div>
+                    <div style="display:flex; gap:-4px;">
+                      <div style="width:22px;height:22px;background:rgba(255,200,0,0.85);border-radius:50%;"></div>
+                      <div style="width:22px;height:22px;background:rgba(255,60,0,0.65);border-radius:50%;margin-left:-8px;"></div>
+                    </div>
+                  </div>
+                  <div id="cardPreviewNum" style="font-size:1.25rem; letter-spacing:4px; font-weight:700; margin-bottom:12px; min-height:28px;">•••• •••• •••• ••••</div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.72rem;">
+                    <div>
+                      <div style="opacity:0.55; margin-bottom:2px; font-size:0.6rem; letter-spacing:1px;">CARD HOLDER</div>
+                      <div id="cardPreviewName" style="font-weight:600; text-transform:uppercase; min-height:16px;">YOUR NAME</div>
+                    </div>
+                    <div style="text-align:right;">
+                      <div style="opacity:0.55; margin-bottom:2px; font-size:0.6rem; letter-spacing:1px;">EXPIRES</div>
+                      <div id="cardPreviewExp" style="font-weight:600; min-height:16px;">MM/YY</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Card Number <span class="req">*</span></label>
+                  <input type="text" class="form-control" id="regCardNum" placeholder="1234 5678 9012 3456" maxlength="19"
+                    oninput="fmtRegCard(this)" />
+                  <div class="form-hint">16-digit number printed on front of card</div>
+                </div>
+                <div class="form-group">
+                  <label>Name on Card <span class="req">*</span></label>
+                  <input type="text" class="form-control" id="regCardName" placeholder="As printed on card" style="text-transform:uppercase;"
+                    oninput="document.getElementById('cardPreviewName').textContent = this.value.toUpperCase() || 'YOUR NAME'" />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Expiry Date <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="regCardExp" placeholder="MM / YY" maxlength="7"
+                      oninput="fmtRegExpiry(this)" />
+                  </div>
+                  <div class="form-group">
+                    <label>CVV <span class="req">*</span></label>
+                    <input type="password" class="form-control" id="regCardCvv" placeholder="•••" maxlength="4" />
+                    <div class="form-hint">3 digits on back (Amex: 4 on front)</div>
+                  </div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+                  <span style="font-size:0.75rem; color:var(--gray);">Accepted:</span>
+                  <span style="background:#1434CB; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.7rem; font-weight:700;">VISA</span>
+                  <span style="background:#EB001B; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.7rem; font-weight:700;">Mastercard</span>
+                  <span style="background:#003087; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.7rem; font-weight:700;">Amex</span>
+                  <span style="background:#006600; color:#fff; padding:3px 10px; border-radius:4px; font-size:0.7rem; font-weight:700;">Verve</span>
+                </div>
+                <div style="background:rgba(245,166,35,0.1); border-left:3px solid #f5a623; border-radius:0 8px 8px 0; padding:12px 14px; font-size:0.78rem; color:#856404;">
+                  🔒 Your card details are encrypted with 256-bit SSL. We only charge the agreed monthly installment on the <strong>28th of every month</strong>. You will receive an SMS reminder on the <strong>25th</strong>, 3 days before each deduction.
+                </div>
+              </div>
+            </div>
+
+            <hr class="form-divider"/>
+            <div class="form-section-title">Guarantor / Collateral</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Do you have a Guarantor?</label>
+                <select class="form-control" id="guarantor">
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Collateral Available?</label>
+                <select class="form-control" id="collateral">
+                  <option value="none">None</option>
+                  <option value="vehicle">Vehicle / Logbook</option>
+                  <option value="land">Land Title</option>
+                  <option value="property">Property</option>
+                  <option value="equipment">Equipment / Machinery</option>
+                  <option value="other">Other Assets</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef;" onclick="goToStep(2)">← Back</button>
+              <button class="btn btn-primary btn-lg" onclick="goToStep(4)">Next → Documents</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: SCAN DOCUMENTS -->
+        <div class="step-panel" id="panel4">
+          <div class="form-card-header">
+            <h2>Step 4 — Scan Documents</h2>
+            <p>Use your camera to scan each document directly, or choose an existing photo from your device.</p>
+          </div>
+          <div class="form-body">
+
+            <!-- Camera modal overlay -->
+            <div id="cameraModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+              <div style="width:100%; max-width:520px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <div style="color:#fff; font-weight:700; font-size:1rem;" id="cameraModalTitle">Scanning Document</div>
+                  <button onclick="closeCamera()" style="background:rgba(255,255,255,0.15); border:none; color:#fff; width:36px; height:36px; border-radius:50%; font-size:1.1rem; cursor:pointer;">✕</button>
+                </div>
+                <!-- Guide frame -->
+                <div style="position:relative; background:#000; border-radius:12px; overflow:hidden; aspect-ratio:4/3;">
+                  <video id="cameraStream" autoplay playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+                  <!-- Corner guides -->
+                  <div style="position:absolute; inset:0; pointer-events:none;">
+                    <div style="position:absolute; top:12%; left:8%; width:28px; height:28px; border-top:3px solid #f5a623; border-left:3px solid #f5a623; border-radius:3px 0 0 0;"></div>
+                    <div style="position:absolute; top:12%; right:8%; width:28px; height:28px; border-top:3px solid #f5a623; border-right:3px solid #f5a623; border-radius:0 3px 0 0;"></div>
+                    <div style="position:absolute; bottom:12%; left:8%; width:28px; height:28px; border-bottom:3px solid #f5a623; border-left:3px solid #f5a623; border-radius:0 0 0 3px;"></div>
+                    <div style="position:absolute; bottom:12%; right:8%; width:28px; height:28px; border-bottom:3px solid #f5a623; border-right:3px solid #f5a623; border-radius:0 0 3px 0;"></div>
+                    <!-- Scan line animation -->
+                    <div id="scanLine" style="position:absolute; left:8%; right:8%; height:2px; background:linear-gradient(90deg, transparent, #f5a623, transparent); top:12%; animation:scanMove 2.5s ease-in-out infinite;"></div>
+                  </div>
+                </div>
+                <div style="text-align:center; color:rgba(255,255,255,0.6); font-size:0.8rem; margin:10px 0 16px;">Position the document inside the frame, then tap Capture</div>
+                <!-- Controls -->
+                <div style="display:flex; gap:12px; justify-content:center;">
+                  <button onclick="switchCamera()" style="background:rgba(255,255,255,0.12); border:none; color:#fff; padding:12px 18px; border-radius:10px; cursor:pointer; font-size:0.85rem;">🔄 Flip</button>
+                  <button onclick="capturePhoto()" style="background:#f5a623; border:none; color:#000; padding:14px 36px; border-radius:12px; font-size:1rem; font-weight:800; cursor:pointer; flex:1;">📸 Capture</button>
+                  <button onclick="retakePhoto()" id="retakeBtn" style="display:none; background:rgba(255,255,255,0.12); border:none; color:#fff; padding:12px 18px; border-radius:10px; cursor:pointer; font-size:0.85rem;">🔁 Retake</button>
+                </div>
+                <!-- Preview after capture -->
+                <div id="capturePreviewWrap" style="display:none; margin-top:14px; text-align:center;">
+                  <img id="capturePreviewImg" src="" alt="Captured" style="width:100%; border-radius:10px; max-height:200px; object-fit:contain; border:2px solid #f5a623;" />
+                  <button onclick="confirmCapture()" style="margin-top:12px; background:#1a5c2e; border:none; color:#fff; padding:12px 28px; border-radius:10px; font-size:0.9rem; font-weight:700; cursor:pointer; width:100%;">✅ Use This Scan</button>
+                </div>
+              </div>
+              <canvas id="cameraCanvas" style="display:none;"></canvas>
+            </div>
+
+            <style>
+              @keyframes scanMove {
+                0%   { top: 12%; }
+                50%  { top: 78%; }
+                100% { top: 12%; }
+              }
+              /* Scan card grid */
+              .scan-docs-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 18px;
+                margin-bottom: 24px;
+              }
+              .scan-card {
+                border: 2px dashed #d0dae8;
+                border-radius: 14px;
+                padding: 22px 18px;
+                text-align: center;
+                background: #fafbfd;
+                transition: all 0.3s;
+                position: relative;
+              }
+              .scan-card.required { border-color: #b8cce0; }
+              .scan-card.scanned  { border-color: #27ae60; border-style: solid; background: #f0fbf5; }
+              .scan-card .sc-icon  { font-size: 2.2rem; margin-bottom: 10px; }
+              .scan-card .sc-title { font-size: 0.88rem; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+              .scan-card .sc-hint  { font-size: 0.73rem; color: #8a9ab0; margin-bottom: 14px; }
+              .scan-card .sc-preview {
+                width: 100%; height: 110px; border-radius: 8px;
+                object-fit: cover; margin-bottom: 12px;
+                border: 1px solid #d0dae8; display: none;
+              }
+              .scan-card.scanned .sc-preview { display: block; }
+              .scan-card .sc-status {
+                position: absolute; top: 10px; right: 10px;
+                font-size: 0.7rem; font-weight: 700; padding: 3px 9px;
+                border-radius: 20px;
+              }
+              .sc-status.done    { background: rgba(39,174,96,0.15); color: #27ae60; }
+              .sc-status.pending { background: rgba(245,166,35,0.15); color: #d4891a; }
+              .scan-btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+              .scan-btn {
+                display: inline-flex; align-items: center; gap: 6px;
+                padding: 9px 14px; border-radius: 8px;
+                font-size: 0.8rem; font-weight: 700; cursor: pointer;
+                border: none; transition: all 0.2s;
+              }
+              .scan-btn.camera { background: var(--primary); color: #fff; }
+              .scan-btn.camera:hover { background: var(--primary-dark); }
+              .scan-btn.gallery { background: #f0f4f8; color: var(--dark); border: 1px solid #dde4ef; }
+              .scan-btn.gallery:hover { background: #e4ecf6; }
+              .scan-btn.remove  { background: rgba(231,76,60,0.1); color: #e74c3c; font-size: 0.75rem; padding: 7px 10px; }
+              /* Tips box */
+              .scan-tips {
+                background: linear-gradient(135deg, #f0f9f4, #e8f5ed);
+                border: 1px solid #c8e6d2;
+                border-radius: 12px;
+                padding: 18px 20px;
+                margin-bottom: 22px;
+                font-size: 0.84rem;
+              }
+              .scan-tips h4 { color: var(--primary); font-size: 0.9rem; margin-bottom: 10px; }
+              .scan-tips ul { padding-left: 18px; color: var(--dark); line-height: 1.8; }
+              /* Progress indicator */
+              .scan-progress {
+                background: #eef2f7;
+                border-radius: 8px;
+                padding: 14px 18px;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                margin-bottom: 22px;
+              }
+              .scan-progress-bar-wrap {
+                flex: 1; background: #dde4ef; border-radius: 6px; height: 8px; overflow: hidden;
+              }
+              .scan-progress-bar {
+                height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+                border-radius: 6px; transition: width 0.5s ease;
+              }
+            </style>
+
+            <!-- Tips -->
+            <div class="scan-tips">
+              <h4>📷 Tips for a Good Scan</h4>
+              <ul>
+                <li>Place the document on a flat, well-lit surface</li>
+                <li>Ensure all four corners of the document are visible in the frame</li>
+                <li>Avoid shadows, glare, and blurry images</li>
+                <li>Documents must be clearly readable — blurry scans will be rejected</li>
+              </ul>
+            </div>
+
+            <!-- Scan progress -->
+            <div class="scan-progress" id="scanProgressWrap">
+              <span style="font-size:0.82rem; font-weight:700; color:var(--dark); white-space:nowrap;" id="scanProgressText">0 of 4 scanned</span>
+              <div class="scan-progress-bar-wrap">
+                <div class="scan-progress-bar" id="scanProgressBar" style="width:0%;"></div>
+              </div>
+              <span style="font-size:0.8rem; color:#8a9ab0;" id="scanProgressPct">0%</span>
+            </div>
+
+            <!-- Document checklist -->
+            <div class="doc-checklist" id="docChecklist" style="margin-bottom:20px;">
+              <h4>📋 Required Documents for <span id="docListLoanType">Personal Loan</span>:</h4>
+              <ul id="docListItems">
+                <li>✅ National ID (front &amp; back)</li>
+                <li>✅ Recent payslip or bank statement (3 months)</li>
+                <li>✅ Passport photo</li>
+                <li>✅ Next of kin ID copy</li>
+              </ul>
+            </div>
+
+            <!-- SCAN CARDS GRID -->
+            <div class="form-section-title">Scan Each Document</div>
+            <div class="scan-docs-grid" id="scanDocsGrid">
+
+              <!-- National ID Front -->
+              <div class="scan-card required" id="card-nid-front">
+                <span class="sc-status pending">Required</span>
+                <div class="sc-icon">🪪</div>
+                <div class="sc-title">National ID — Front <span style="color:#e74c3c">*</span></div>
+                <div class="sc-hint">Face side of your National Identity Card</div>
+                <img class="sc-preview" id="prev-nid-front" src="" alt="NID Front scan" />
+                <div class="scan-btn-row">
+                  <button class="scan-btn camera" onclick="openCamera('nid-front', 'National ID — Front')">📷 Scan</button>
+                  <label class="scan-btn gallery">
+                    🖼 Gallery
+                    <input type="file" accept="image/*" style="display:none;" onchange="loadFromGallery(this, 'nid-front')" />
+                  </label>
+                  <button class="scan-btn remove" id="remove-nid-front" style="display:none;" onclick="removeDoc('nid-front')">✕</button>
+                </div>
+                <input type="hidden" id="data-nid-front" />
+              </div>
+
+              <!-- National ID Back -->
+              <div class="scan-card required" id="card-nid-back">
+                <span class="sc-status pending">Required</span>
+                <div class="sc-icon">🪪</div>
+                <div class="sc-title">National ID — Back <span style="color:#e74c3c">*</span></div>
+                <div class="sc-hint">Reverse side of your National Identity Card</div>
+                <img class="sc-preview" id="prev-nid-back" src="" alt="NID Back scan" />
+                <div class="scan-btn-row">
+                  <button class="scan-btn camera" onclick="openCamera('nid-back', 'National ID — Back')">📷 Scan</button>
+                  <label class="scan-btn gallery">
+                    🖼 Gallery
+                    <input type="file" accept="image/*" style="display:none;" onchange="loadFromGallery(this, 'nid-back')" />
+                  </label>
+                  <button class="scan-btn remove" id="remove-nid-back" style="display:none;" onclick="removeDoc('nid-back')">✕</button>
+                </div>
+                <input type="hidden" id="data-nid-back" />
+              </div>
+
+              <!-- Passport Photo -->
+              <div class="scan-card required" id="card-passport">
+                <span class="sc-status pending">Required</span>
+                <div class="sc-icon">🤳</div>
+                <div class="sc-title">Passport / Selfie Photo <span style="color:#e74c3c">*</span></div>
+                <div class="sc-hint">Recent clear photo of your face (passport size)</div>
+                <img class="sc-preview" id="prev-passport" src="" alt="Passport photo" />
+                <div class="scan-btn-row">
+                  <button class="scan-btn camera" onclick="openCamera('passport', 'Passport / Selfie Photo', true)">🤳 Selfie</button>
+                  <label class="scan-btn gallery">
+                    🖼 Gallery
+                    <input type="file" accept="image/*" style="display:none;" onchange="loadFromGallery(this, 'passport')" />
+                  </label>
+                  <button class="scan-btn remove" id="remove-passport" style="display:none;" onclick="removeDoc('passport')">✕</button>
+                </div>
+                <input type="hidden" id="data-passport" />
+              </div>
+
+              <!-- Bank Statement / Payslip -->
+              <div class="scan-card required" id="card-statement">
+                <span class="sc-status pending">Required</span>
+                <div class="sc-icon">📄</div>
+                <div class="sc-title">Bank Statement / Payslip <span style="color:#e74c3c">*</span></div>
+                <div class="sc-hint">Last 3 months — showing name &amp; transactions</div>
+                <img class="sc-preview" id="prev-statement" src="" alt="Statement scan" />
+                <div class="scan-btn-row">
+                  <button class="scan-btn camera" onclick="openCamera('statement', 'Bank Statement / Payslip')">📷 Scan</button>
+                  <label class="scan-btn gallery">
+                    🖼 Gallery
+                    <input type="file" accept="image/*,.pdf" style="display:none;" onchange="loadFromGallery(this, 'statement')" />
+                  </label>
+                  <button class="scan-btn remove" id="remove-statement" style="display:none;" onclick="removeDoc('statement')">✕</button>
+                </div>
+                <input type="hidden" id="data-statement" />
+              </div>
+
+              <!-- Business Cert (optional) -->
+              <div class="scan-card" id="card-bizreg" style="display:none;">
+                <span class="sc-status pending" style="background:rgba(41,128,185,0.1); color:#2980b9;">Optional</span>
+                <div class="sc-icon">📋</div>
+                <div class="sc-title">Business Registration Cert</div>
+                <div class="sc-hint">URSB or local government certificate</div>
+                <img class="sc-preview" id="prev-bizreg" src="" alt="Biz Reg scan" />
+                <div class="scan-btn-row">
+                  <button class="scan-btn camera" onclick="openCamera('bizreg', 'Business Registration Cert')">📷 Scan</button>
+                  <label class="scan-btn gallery">
+                    🖼 Gallery
+                    <input type="file" accept="image/*,.pdf" style="display:none;" onchange="loadFromGallery(this, 'bizreg')" />
+                  </label>
+                  <button class="scan-btn remove" id="remove-bizreg" style="display:none;" onclick="removeDoc('bizreg')">✕</button>
+                </div>
+                <input type="hidden" id="data-bizreg" />
+              </div>
+
+              <!-- Collateral Doc (optional) -->
+              <div class="scan-card" id="card-collateral">
+                <span class="sc-status pending" style="background:rgba(41,128,185,0.1); color:#2980b9;">Optional</span>
+                <div class="sc-icon">🏠</div>
+                <div class="sc-title">Collateral Document</div>
+                <div class="sc-hint">Logbook, land title, or other asset document</div>
+                <img class="sc-preview" id="prev-collateral" src="" alt="Collateral scan" />
+                <div class="scan-btn-row">
+                  <button class="scan-btn camera" onclick="openCamera('collateral', 'Collateral Document')">📷 Scan</button>
+                  <label class="scan-btn gallery">
+                    🖼 Gallery
+                    <input type="file" accept="image/*,.pdf" style="display:none;" onchange="loadFromGallery(this, 'collateral')" />
+                  </label>
+                  <button class="scan-btn remove" id="remove-collateral" style="display:none;" onclick="removeDoc('collateral')">✕</button>
+                </div>
+                <input type="hidden" id="data-collateral" />
+              </div>
+
+            </div><!-- end scan-docs-grid -->
+
+            <hr class="form-divider"/>
+            <div class="alert alert-info">
+              🔒 All scanned documents are encrypted end-to-end and processed in compliance with Uganda's Data Protection and Privacy Act, 2019.
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef;" onclick="goToStep(3)">← Back</button>
+              <button class="btn btn-primary btn-lg" onclick="goToStep(5)">Next → Review &amp; Submit</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: REVIEW & SUBMIT -->
+        <div class="step-panel" id="panel5">
+          <div class="form-card-header">
+            <h2>Step 5 — Review & Submit</h2>
+            <p>Please review your application before submitting.</p>
+          </div>
+          <div class="form-body">
+            <div class="alert alert-info">ℹ Review your details carefully. You can go back to edit any section.</div>
+            <div class="form-section-title">Loan Summary</div>
+            <div id="reviewSummary" style="background:#f8fafb; border-radius:10px; padding:20px; margin-bottom:24px; font-size:0.9rem;">
+              <!-- Filled by JS -->
+            </div>
+            <hr class="form-divider"/>
+            <div class="form-section-title">Declaration</div>
+            <div class="form-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="chkAccurate" />
+                <label for="chkAccurate">I confirm that all information provided is true and accurate to the best of my knowledge.</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="chkTerms" />
+                <label for="chkTerms">I agree to the <a href="#">Terms &amp; Conditions</a> and <a href="#">Privacy Policy</a> of Faster Loans Uganda Limited.</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="chkCredit" />
+                <label for="chkCredit">I authorise Faster Loans Uganda to perform a credit check on my information through licensed credit bureaus.</label>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef;" onclick="goToStep(4)">← Back</button>
+              <button class="btn btn-primary btn-lg" onclick="submitApplication()">🚀 Submit Application</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end form-card -->
+    </div><!-- end form-container -->
+  </div><!-- end form-section -->
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-bottom" style="max-width:1200px; margin:0 auto; padding:20px 40px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <span>© 2026 Faster Loans Uganda Limited. All rights reserved. Licensed by UMRA.</span>
+      <div style="display:flex; gap:20px;">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms &amp; Conditions</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Loan type configurations
+    const loanConfigs = {
+      personal:  { min: 250000, max: 5000000, label: "Personal Loan" },
+      business:  { min: 1000000, max: 30000000, label: "Business Loan" },
+      emergency: { min: 250000, max: 2000000, label: "Emergency Loan" },
+      education: { min: 500000, max: 10000000, label: "Education Loan" },
+      logbook:   { min: 1000000, max: 20000000, label: "Logbook Loan" },
+      mortgage:  { min: 5000000, max: 30000000, label: "Mortgage / Asset Loan" }
+    };
+
+    let selectedLoanType = "personal";
+    let currentStep = 1;
+
+    // Pre-select from URL param
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get('type');
+      if (type && loanConfigs[type]) {
+        document.querySelectorAll('.loan-type-btn').forEach(b => b.classList.remove('selected'));
+        const btn = document.querySelector(`[data-type="${type}"]`);
+        if (btn) { btn.classList.add('selected'); applyLoanConfig(type); }
+      }
+    });
+
+    function selectLoanType(el) {
+      document.querySelectorAll('.loan-type-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      const type = el.dataset.type;
+      selectedLoanType = type;
+      applyLoanConfig(type);
+    }
+
+    function applyLoanConfig(type) {
+      selectedLoanType = type;
+      const cfg = loanConfigs[type];
+      const slider = document.getElementById('amountSlider');
+      slider.min = cfg.min;
+      slider.max = cfg.max;
+      const mid = Math.round((cfg.min + cfg.max) / 2 / 50000) * 50000;
+      slider.value = mid;
+      updateAmount(mid);
+      document.getElementById('sliderMin').textContent = 'UGX ' + cfg.min.toLocaleString();
+      document.getElementById('sliderMax').textContent = 'UGX ' + cfg.max.toLocaleString();
+    }
+
+    function updateAmount(val) {
+      document.getElementById('amountDisplay').textContent = 'UGX ' + parseInt(val).toLocaleString();
+      recalcRepayment();
+    }
+
+    function goToStep(step) {
+      // Validate current step
+      if (step > currentStep) {
+        if (!validateStep(currentStep)) return;
+      }
+
+      document.getElementById(`panel${currentStep}`).classList.remove('active');
+      document.getElementById(`panel${step}`).classList.add('active');
+
+      // Update stepper
+      for (let i = 1; i <= 5; i++) {
+        const circle = document.getElementById(`sc${i}`);
+        const label  = document.getElementById(`sl${i}`);
+        circle.classList.remove('active', 'done');
+        label.classList.remove('active');
+        if (i < step) { circle.classList.add('done'); circle.textContent = '✓'; }
+        else if (i === step) { circle.classList.add('active'); circle.textContent = i; label.classList.add('active'); }
+        else { circle.textContent = i; }
+      }
+      for (let i = 1; i <= 4; i++) {
+        const line = document.getElementById(`line${i}`);
+        line.classList.toggle('done', i < step);
+      }
+
+      if (step === 5) buildReviewSummary();
+      currentStep = step;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function validateStep(step) {
+      if (step === 1) {
+        if (!document.getElementById('tenure').value) { alert('Please select a repayment duration.'); return false; }
+        if (!document.getElementById('purpose').value) { alert('Please select a loan purpose.'); return false; }
+      }
+      if (step === 2) {
+        const req = ['firstName','lastName','dob','gender','nationalId','phone','email','district','address','kinName','kinRelation','kinPhone'];
+        for (const id of req) {
+          if (!document.getElementById(id).value.trim()) {
+            alert('Please fill in all required fields.'); return false;
+          }
+        }
+      }
+      if (step === 3) {
+        if (!document.getElementById('empStatus').value) { alert('Please select your employment status.'); return false; }
+        if (!document.getElementById('income').value)    { alert('Please select your income range.'); return false; }
+        if (!document.getElementById('bankName').value)  { alert('Please select your bank.'); return false; }
+        if (!document.getElementById('bankAcc').value.trim())  { alert('Please enter your bank account number.'); return false; }
+        if (!document.getElementById('bankAccName').value.trim()){ alert('Please enter the account holder name.'); return false; }
+        if (!document.getElementById('regCardNum').value.replace(/\s/g,'').match(/^\d{16}$/)) { alert('Please enter a valid 16-digit card number.'); return false; }
+        if (!document.getElementById('regCardName').value.trim()) { alert('Please enter the name on your card.'); return false; }
+        if (!document.getElementById('regCardExp').value.match(/\d{2}\s\/\s\d{2}/)) { alert('Please enter a valid card expiry date (MM / YY).'); return false; }
+        if (!document.getElementById('regCardCvv').value.match(/^\d{3,4}$/)) { alert('Please enter a valid CVV.'); return false; }
+      }
+      return true;
+    }
+
+    /* Card number formatter for registration */
+    function fmtRegCard(input) {
+      let val = input.value.replace(/\D/g,'').substring(0,16);
+      val = val.replace(/(.{4})/g,'$1 ').trim();
+      input.value = val;
+      const masked = (val.replace(/\d(?=.{5})/g,'•')).padEnd(19,'•');
+      document.getElementById('cardPreviewNum').textContent = val || '•••• •••• •••• ••••';
+    }
+
+    function fmtRegExpiry(input) {
+      let val = input.value.replace(/\D/g,'');
+      if (val.length >= 2) val = val.substring(0,2) + ' / ' + val.substring(2,4);
+      input.value = val;
+      document.getElementById('cardPreviewExp').textContent = val || 'MM/YY';
+    }
+
+    /* ---- Repayment breakdown calculator ---- */
+    const loanRates = { personal:3.5, business:3.0, emergency:4.0, education:3.0, logbook:3.5, mortgage:2.0 };
+
+    function recalcRepayment() {
+      const months    = parseInt(document.getElementById('tenure').value);
+      const principal = parseInt(document.getElementById('amountSlider').value);
+      if (!months || !principal) {
+        document.getElementById('repaymentBreakdown').style.display    = 'none';
+        document.getElementById('repaymentPlaceholder').style.display  = 'block';
+        return;
+      }
+      const rate    = (loanRates[selectedLoanType] || 3.5) / 100;
+      // Reducing balance monthly installment formula
+      const monthly = Math.round(principal * rate * Math.pow(1+rate, months) / (Math.pow(1+rate, months) - 1));
+      const total   = monthly * months;
+      const interest= total - principal;
+
+      document.getElementById('rb-monthly').textContent  = 'UGX ' + monthly.toLocaleString();
+      document.getElementById('rb-total').textContent    = 'UGX ' + total.toLocaleString();
+      document.getElementById('rb-months').textContent   = months;
+      document.getElementById('rb-principal').textContent= 'UGX ' + principal.toLocaleString();
+      document.getElementById('rb-interest').textContent = 'UGX ' + interest.toLocaleString();
+      document.getElementById('rb-rate').textContent     = (loanRates[selectedLoanType] || 3.5) + '% / mo';
+
+      // Build mini schedule (first 4 rows, rest summary)
+      const tbody  = document.getElementById('rb-schedule-body');
+      const today  = new Date();
+      today.setDate(28); // first payment on 28th
+      if (today <= new Date()) today.setMonth(today.getMonth() + 1); // if 28th already passed this month, go next
+      let balance  = principal;
+      let rows     = '';
+      const show   = Math.min(4, months);
+      for (let i = 1; i <= show; i++) {
+        const due       = new Date(today);
+        due.setMonth(today.getMonth() + (i - 1));
+        const dateStr   = due.toLocaleDateString('en-UG', {day:'numeric', month:'short', year:'numeric'});
+        const intPart   = Math.round(balance * rate);
+        const prinPart  = monthly - intPart;
+        balance = Math.max(0, balance - prinPart);
+        rows += `<tr style="border-bottom:1px solid #f0f2f5;">
+          <td style="padding:8px 14px; color:#8a9ab0;">${i}</td>
+          <td style="padding:8px 14px;">${dateStr}</td>
+          <td style="padding:8px 14px; text-align:right;">${prinPart.toLocaleString()}</td>
+          <td style="padding:8px 14px; text-align:right; color:#f59e0b;">${intPart.toLocaleString()}</td>
+          <td style="padding:8px 14px; text-align:right; font-weight:800; color:#1a5c2e;">${monthly.toLocaleString()}</td>
+        </tr>`;
+      }
+      tbody.innerHTML = rows;
+      if (months > 4) {
+        document.getElementById('rb-schedule-more').style.display = 'block';
+        document.getElementById('rb-remaining-count').textContent = (months - 4);
+      } else {
+        document.getElementById('rb-schedule-more').style.display = 'none';
+      }
+
+      document.getElementById('repaymentBreakdown').style.display   = 'block';
+      document.getElementById('repaymentPlaceholder').style.display = 'none';
+    }
+
+    function buildReviewSummary() {
+      const amount   = document.getElementById('amountDisplay').textContent;
+      const tenure   = document.getElementById('tenure').value;
+      const purpose  = document.getElementById('purpose').value;
+      const fname    = document.getElementById('firstName').value;
+      const lname    = document.getElementById('lastName').value;
+      const phone    = document.getElementById('phone').value;
+      const email    = document.getElementById('email').value;
+      const district = document.getElementById('district').value;
+      const income   = document.getElementById('income').value;
+      const bankN    = document.getElementById('bankName').value;
+      const bankA    = document.getElementById('bankAcc').value;
+      const cardNum  = document.getElementById('regCardNum').value;
+      const cardLast = cardNum.replace(/\s/g,'').slice(-4);
+      const monthly  = document.getElementById('rb-monthly')?.textContent || '—';
+      const loanLabel = loanConfigs[selectedLoanType]?.label || selectedLoanType;
+
+      document.getElementById('reviewSummary').innerHTML = `
+        <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+          <tr style="background:#f0f9f4;"><td colspan="2" style="padding:10px 14px; font-weight:700; color:var(--primary);">💼 Loan Details</td></tr>
+          <tr><td style="padding:8px 14px; color:#8a9ab0; width:45%;">Loan Type</td><td style="padding:8px 14px; font-weight:600;">${loanLabel}</td></tr>
+          <tr style="background:#fafbfd;"><td style="padding:8px 14px; color:#8a9ab0;">Amount Requested</td><td style="padding:8px 14px; font-weight:700; color:var(--primary);">${amount}</td></tr>
+          <tr><td style="padding:8px 14px; color:#8a9ab0;">Tenure</td><td style="padding:8px 14px; font-weight:600;">${tenure} Month(s)</td></tr>
+          <tr style="background:#fafbfd;"><td style="padding:8px 14px; color:#8a9ab0;">Monthly Installment</td><td style="padding:8px 14px; font-weight:800; color:var(--primary);">${monthly}</td></tr>
+          <tr><td style="padding:8px 14px; color:#8a9ab0;">Purpose</td><td style="padding:8px 14px;">${purpose}</td></tr>
+          <tr style="background:#f0f9f4;"><td colspan="2" style="padding:10px 14px; font-weight:700; color:var(--primary);">👤 Personal Details</td></tr>
+          <tr><td style="padding:8px 14px; color:#8a9ab0;">Full Name</td><td style="padding:8px 14px; font-weight:600;">${fname} ${lname}</td></tr>
+          <tr style="background:#fafbfd;"><td style="padding:8px 14px; color:#8a9ab0;">Phone</td><td style="padding:8px 14px;">${phone}</td></tr>
+          <tr><td style="padding:8px 14px; color:#8a9ab0;">Email</td><td style="padding:8px 14px;">${email}</td></tr>
+          <tr style="background:#fafbfd;"><td style="padding:8px 14px; color:#8a9ab0;">District</td><td style="padding:8px 14px;">${district}</td></tr>
+          <tr style="background:#f0f9f4;"><td colspan="2" style="padding:10px 14px; font-weight:700; color:var(--primary);">💰 Financial &amp; Repayment Details</td></tr>
+          <tr><td style="padding:8px 14px; color:#8a9ab0;">Monthly Income</td><td style="padding:8px 14px;">${income}</td></tr>
+          <tr style="background:#fafbfd;"><td style="padding:8px 14px; color:#8a9ab0;">Disbursement Bank</td><td style="padding:8px 14px; font-weight:600;">${bankN} — A/C ${bankA}</td></tr>
+          <tr><td style="padding:8px 14px; color:#8a9ab0;">Auto-Debit Card</td><td style="padding:8px 14px; font-weight:600;">💳 •••• •••• •••• ${cardLast || '••••'}</td></tr>
+          <tr style="background:#fafbfd;"><td style="padding:8px 14px; color:#8a9ab0;">Repayment</td><td style="padding:8px 14px; color:#1a5c2e; font-weight:700;">Auto-debit ${monthly} / month for ${tenure} months</td></tr>
+        </table>`;
+    }
+
+    function submitApplication() {
+      if (!document.getElementById('chkAccurate').checked) { alert('Please confirm that all information is accurate.'); return; }
+      if (!document.getElementById('chkTerms').checked)    { alert('Please agree to the Terms & Conditions.'); return; }
+      if (!document.getElementById('chkCredit').checked)   { alert('Please authorise the credit check.'); return; }
+
+      const refNum = 'FL-2026-' + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('refNumber').textContent = refNum;
+
+      document.querySelectorAll('.step-panel').forEach(p => p.style.display = 'none');
+      document.getElementById('stepper').style.display = 'none';
+      document.getElementById('successOverlay').classList.add('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ====================================================
+       DOCUMENT SCANNING ENGINE
+       ==================================================== */
+    let cameraStream   = null;      // active MediaStream
+    let currentDocId   = null;      // which doc slot is being scanned
+    let facingMode     = 'environment'; // start with rear camera
+    let capturedData   = null;      // base64 data URI of captured image
+
+    // Required doc IDs — must all be scanned before proceeding
+    const requiredDocs = ['nid-front', 'nid-back', 'passport', 'statement'];
+    const scannedDocs  = new Set();
+
+    /* ---- Open camera modal ---- */
+    async function openCamera(docId, title, selfie = false) {
+      currentDocId = docId;
+      facingMode   = selfie ? 'user' : 'environment';
+      capturedData = null;
+
+      document.getElementById('cameraModalTitle').textContent = '📷 ' + title;
+      document.getElementById('cameraModal').style.display    = 'flex';
+      document.getElementById('capturePreviewWrap').style.display = 'none';
+      document.getElementById('retakeBtn').style.display      = 'none';
+      document.getElementById('capturePreviewWrap').style.display = 'none';
+
+      await startStream();
+    }
+
+    async function startStream() {
+      // Stop any existing stream
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      try {
+        const constraints = {
+          video: {
+            facingMode: facingMode,
+            width:  { ideal: 1280 },
+            height: { ideal: 960 }
+          }
+        };
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video  = document.getElementById('cameraStream');
+        video.srcObject = cameraStream;
+        video.style.display = 'block';
+      } catch (err) {
+        closeCamera();
+        // Graceful fallback: open gallery picker instead
+        alert('Camera not available on this device. Please select an image from your gallery instead.');
+        document.querySelector(`#card-${currentDocId} input[type="file"]`)?.click();
+      }
+    }
+
+    /* ---- Flip front/rear camera ---- */
+    async function switchCamera() {
+      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      await startStream();
+    }
+
+    /* ---- Capture still frame from video ---- */
+    function capturePhoto() {
+      const video  = document.getElementById('cameraStream');
+      const canvas = document.getElementById('cameraCanvas');
+      canvas.width  = video.videoWidth  || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Optional: apply slight contrast boost for document scanning
+      ctx.filter = 'contrast(1.15) brightness(1.05)';
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      capturedData = canvas.toDataURL('image/jpeg', 0.88);
+
+      // Show preview
+      const previewImg = document.getElementById('capturePreviewImg');
+      previewImg.src = capturedData;
+      document.getElementById('capturePreviewWrap').style.display = 'block';
+      document.getElementById('retakeBtn').style.display          = 'inline-flex';
+
+      // Pause stream while previewing
+      video.pause();
+    }
+
+    /* ---- Retake — clear preview and resume stream ---- */
+    function retakePhoto() {
+      capturedData = null;
+      document.getElementById('capturePreviewWrap').style.display = 'none';
+      document.getElementById('retakeBtn').style.display          = 'none';
+      document.getElementById('cameraStream').play();
+    }
+
+    /* ---- Confirm and save the captured image ---- */
+    function confirmCapture() {
+      if (!capturedData || !currentDocId) return;
+      applyScannedImage(currentDocId, capturedData);
+      closeCamera();
+    }
+
+    /* ---- Load from gallery (file input fallback) ---- */
+    function loadFromGallery(input, docId) {
+      if (!input.files || !input.files[0]) return;
+      const file   = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => applyScannedImage(docId, e.target.result);
+      reader.readAsDataURL(file);
+    }
+
+    /* ---- Apply image to the scan card UI ---- */
+    function applyScannedImage(docId, dataUrl) {
+      // Show preview image on the card
+      const preview = document.getElementById('prev-' + docId);
+      if (preview) {
+        preview.src     = dataUrl;
+        preview.style.display = 'block';
+      }
+
+      // Store data in hidden field
+      const hidden = document.getElementById('data-' + docId);
+      if (hidden) hidden.value = dataUrl;
+
+      // Mark card as scanned
+      const card = document.getElementById('card-' + docId);
+      if (card) {
+        card.classList.add('scanned');
+        const badge = card.querySelector('.sc-status');
+        if (badge) {
+          badge.textContent = '✓ Scanned';
+          badge.className   = 'sc-status done';
+        }
+        document.getElementById('remove-' + docId).style.display = 'inline-flex';
+      }
+
+      // Track progress
+      scannedDocs.add(docId);
+      updateScanProgress();
+    }
+
+    /* ---- Remove a scanned doc ---- */
+    function removeDoc(docId) {
+      const preview = document.getElementById('prev-' + docId);
+      if (preview) { preview.src = ''; preview.style.display = 'none'; }
+
+      const hidden = document.getElementById('data-' + docId);
+      if (hidden) hidden.value = '';
+
+      const card = document.getElementById('card-' + docId);
+      if (card) {
+        card.classList.remove('scanned');
+        const badge = card.querySelector('.sc-status');
+        if (badge) {
+          badge.textContent = requiredDocs.includes(docId) ? 'Required' : 'Optional';
+          badge.className   = 'sc-status pending';
+          if (!requiredDocs.includes(docId)) {
+            badge.style.background = 'rgba(41,128,185,0.1)';
+            badge.style.color      = '#2980b9';
+          }
+        }
+        document.getElementById('remove-' + docId).style.display = 'none';
+      }
+
+      scannedDocs.delete(docId);
+      updateScanProgress();
+    }
+
+    /* ---- Update progress bar ---- */
+    function updateScanProgress() {
+      const done  = requiredDocs.filter(id => scannedDocs.has(id)).length;
+      const total = requiredDocs.length;
+      const pct   = Math.round((done / total) * 100);
+      document.getElementById('scanProgressBar').style.width = pct + '%';
+      document.getElementById('scanProgressText').textContent = done + ' of ' + total + ' required scanned';
+      document.getElementById('scanProgressPct').textContent  = pct + '%';
+    }
+
+    /* ---- Close and clean up camera ---- */
+    function closeCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      document.getElementById('cameraModal').style.display = 'none';
+      capturedData = null;
+    }
+
+    /* ---- Override goToStep to validate scans on step 4 ---- */
+    const _origGoToStep = goToStep;
+    // Patch validateStep to check scans
+    const _origValidate = validateStep;
+    window.validateStep = function(step) {
+      if (step === 4) {
+        const missing = requiredDocs.filter(id => !scannedDocs.has(id));
+        if (missing.length > 0) {
+          alert('Please scan all required documents before continuing.\n\nMissing: ' + missing.map(id => {
+            const map = { 'nid-front':'National ID (Front)', 'nid-back':'National ID (Back)', 'passport':'Passport Photo', 'statement':'Bank Statement / Payslip' };
+            return map[id] || id;
+          }).join(', '));
+          return false;
+        }
+      }
+      return _origValidate(step);
+    };
+
+    /* Clean up stream if user navigates away */
+    window.addEventListener('beforeunload', closeCamera);
+  </script>
+</body>
+</html>

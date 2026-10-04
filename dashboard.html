@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard – Faster Loans Uganda</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+  <style>
+    /* ---- Dashboard-specific extras ---- */
+    body { background: var(--light-gray); }
+
+    .dash-top-bar {
+      position: fixed;
+      top: 70px;
+      left: 260px;
+      right: 0;
+      background: var(--white);
+      border-bottom: 1px solid #eef2f7;
+      padding: 12px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 99;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .dash-top-bar .page-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .greeting-bar {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 26px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .greeting-bar h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+    .greeting-bar p { font-size: 0.85rem; opacity: 0.85; }
+
+    /* ---- Loan progress card ---- */
+    .loan-progress-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .loan-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .loan-progress-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .loan-progress-ref {
+      font-size: 0.78rem;
+      color: var(--gray);
+      margin-top: 3px;
+    }
+    .loan-amounts {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .loan-amount-item .la-label { font-size: 0.72rem; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+    .loan-amount-item .la-value { font-size: 1.1rem; font-weight: 800; color: var(--dark); margin-top: 3px; }
+    .loan-amount-item .la-value.green { color: var(--success); }
+    .loan-amount-item .la-value.red { color: var(--danger); }
+    .loan-amount-item .la-value.gold { color: var(--accent-dark); }
+
+    /* ---- Chart area ---- */
+    .chart-container {
+      position: relative;
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 10px 0 30px;
+    }
+    .chart-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .chart-bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(180deg, var(--primary-light), var(--primary));
+      transition: all 0.8s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      cursor: pointer;
+    }
+    .chart-bar:hover { opacity: 0.8; }
+    .chart-bar.paid { background: linear-gradient(180deg, #4ade80, #16a34a); }
+    .chart-bar.upcoming { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+    .chart-bar.overdue { background: linear-gradient(180deg, #f87171, #dc2626); }
+    .chart-label {
+      font-size: 0.65rem;
+      color: var(--gray);
+      text-align: center;
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+    .chart-value {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 3px;
+    }
+
+    /* ---- Notification ---- */
+    .notif-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f2f5;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-dot-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .notif-dot-icon.green { background: rgba(39,174,96,0.12); }
+    .notif-dot-icon.gold { background: rgba(245,166,35,0.12); }
+    .notif-dot-icon.red { background: rgba(231,76,60,0.12); }
+    .notif-dot-icon.blue { background: rgba(41,128,185,0.12); }
+    .notif-title { font-size: 0.87rem; font-weight: 600; color: var(--dark); }
+    .notif-time { font-size: 0.73rem; color: var(--gray); margin-top: 2px; }
+
+    /* ---- Quick actions ---- */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+    .quick-action {
+      background: var(--white);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      padding: 20px 14px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .quick-action:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    .quick-action .qa-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .quick-action .qa-label { font-size: 0.8rem; font-weight: 700; color: var(--dark); }
+
+    /* ---- Transactions table ---- */
+    .txn-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.87rem;
+    }
+    .txn-table thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      background: #f8fafc;
+      border-bottom: 1px solid #eef2f7;
+    }
+    .txn-table tbody td { padding: 14px 16px; border-bottom: 1px solid #f0f2f5; color: var(--dark); }
+    .txn-table tbody tr:last-child td { border-bottom: none; }
+    .txn-table tbody tr:hover { background: #fafbfd; }
+    .txn-amount.credit { color: var(--success); font-weight: 700; }
+    .txn-amount.debit  { color: var(--danger); font-weight: 700; }
+
+    /* ---- Sidebar section heading ---- */
+    .sidebar-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 16px 28px 6px;
+    }
+
+    /* ---- Donut chart ---- */
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 0;
+      flex-wrap: wrap;
+    }
+    .donut-svg { flex-shrink: 0; }
+    .donut-legend { display: flex; flex-direction: column; gap: 10px; }
+    .donut-legend-item { display: flex; align-items: center; gap: 10px; font-size: 0.83rem; }
+    .donut-legend-color { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+    /* ---- Profile section ---- */
+    .profile-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(39,174,96,0.12); color: var(--success);
+      padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .dash-top-bar { left: 0; padding: 10px 20px; top: 70px; }
+      .dashboard-main { padding-top: 110px !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MAIN NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="logo-container">
+      <svg class="logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="50" fill="#1a5c2e"/>
+        <text x="50" y="38" text-anchor="middle" fill="#f5a623" font-size="22" font-weight="900" font-family="Segoe UI, sans-serif">FL</text>
+        <text x="50" y="58" text-anchor="middle" fill="#ffffff" font-size="10" font-family="Segoe UI, sans-serif">UGANDA</text>
+        <path d="M20 68 Q50 80 80 68" stroke="#f5a623" stroke-width="3" fill="none"/>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Faster Loans</span>
+        <span class="tagline">Uganda Limited</span>
+      </div>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="apply.html">Apply Now</a></li>
+      <li><a href="payment.html">Repay Loan</a></li>
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+    </ul>
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- DASHBOARD LAYOUT -->
+  <div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="user-avatar">NP</div>
+        <div class="name">Nakamya Prossy</div>
+        <div class="email">nakamya@email.com</div>
+        <div style="margin-top:8px;">
+          <span class="profile-badge">✓ Verified</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section-label">Main Menu</div>
+      <ul class="sidebar-nav">
+        <li><a href="#" class="active" onclick="showSection('overview')">
+          <span class="nav-icon">📊</span> Overview
+        </a></li>
+        <li><a href="#" onclick="showSection('myloans')">
+          <span class="nav-icon">💼</span> My Loans
+          <span class="nav-badge">2</span>
+        </a></li>
+        <li><a href="#" onclick="showSection('repayments')">
+          <span class="nav-icon">📅</span> Repayment Schedule
+        </a></li>
+        <li><a href="#" onclick="showSection('transactions')">
+          <span class="nav-icon">💳</span> Transactions
+        </a></li>
+        <li><a href="#" onclick="showSection('documents')">
+          <span class="nav-icon">📄</span> Documents
+        </a></li>
+        <li><a href="#" onclick="showSection('notifications')">
+          <span class="nav-icon">🔔</span> Notifications
+          <span class="nav-badge">3</span>
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section-label">Account</div>
+      <ul class="sidebar-nav">
+        <li><a href="#" onclick="showSection('profile')">
+          <span class="nav-icon">👤</span> My Profile
+        </a></li>
+        <li><a href="#" onclick="showSection('support')">
+          <span class="nav-icon">🎧</span> Support
+        </a></li>
+        <li><a href="index.html">
+          <span class="nav-icon">🏠</span> Back to Home
+        </a></li>
+      </ul>
+
+      <div style="padding: 20px 20px 0; margin-top:10px;">
+        <div style="background:rgba(245,166,35,0.15); border-radius:10px; padding:16px; font-size:0.8rem; color:rgba(255,255,255,0.8);">
+          <div style="font-weight:700; color:var(--accent); margin-bottom:6px;">💡 Need more funds?</div>
+          <div style="margin-bottom:10px;">Apply for a top-up loan today.</div>
+          <a href="apply.html" class="btn btn-primary" style="padding:8px 14px; font-size:0.8rem; width:100%; justify-content:center;">Apply Now</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="dashboard-main" style="padding-top: 80px;">
+
+      <!-- TOP BAR -->
+      <div class="dash-top-bar">
+        <div class="page-title" id="topBarTitle">📊 Dashboard Overview</div>
+        <div class="top-bar-actions">
+          <a href="apply.html" class="btn btn-primary" style="padding:9px 18px; font-size:0.83rem;">+ New Loan</a>
+          <a href="payment.html" class="btn btn-green" style="padding:9px 18px; font-size:0.83rem;">💳 Repay</a>
+          <a href="#" class="notif-btn">🔔<span class="notif-dot"></span></a>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: OVERVIEW (default)
+           ============================ -->
+      <div id="section-overview">
+        <!-- Greeting -->
+        <div class="greeting-bar">
+          <div>
+            <h2>Good morning, Prossy! 👋</h2>
+            <p>Sunday, 27 September 2026 — Here's your loan summary at a glance.</p>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.72rem; opacity:0.75; text-transform:uppercase; letter-spacing:1px;">Account Status</div>
+            <div style="font-size:1.1rem; font-weight:800; margin-top:3px;">✅ Good Standing</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info">
+              <div class="value">UGX 3.85M</div>
+              <div class="label">Total Borrowed</div>
+              <div class="change up">↑ Active</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">📉</div>
+            <div class="stat-info">
+              <div class="value">UGX 1.85M</div>
+              <div class="label">Outstanding Balance</div>
+              <div class="change down">Auto-debit: 28 Oct 2026</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon gold">✅</div>
+            <div class="stat-info">
+              <div class="value">UGX 2.00M</div>
+              <div class="label">Total Paid</div>
+              <div class="change up">↑ 52% repaid</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">📅</div>
+            <div class="stat-info">
+              <div class="value">UGX 320K</div>
+              <div class="label">Next Installment</div>
+              <div class="change down">Due in 18 days</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main grid -->
+        <div class="dash-grid">
+          <!-- Active Loan Card -->
+          <div>
+            <div class="loan-progress-card">
+              <div class="loan-progress-header">
+                <div>
+                  <div class="loan-progress-title">🏢 Business Loan – FL-2026-1847</div>
+                  <div class="loan-progress-ref">Applied: 1 June 2026 · Status: <span class="status-badge active">Active</span></div>
+                </div>
+                <span class="status-badge active">Active</span>
+              </div>
+              <div class="loan-amounts">
+                <div class="loan-amount-item">
+                  <div class="la-label">Loan Amount</div>
+                  <div class="la-value">UGX 3,850,000</div>
+                </div>
+                <div class="loan-amount-item">
+                  <div class="la-label">Amount Paid</div>
+                  <div class="la-value green">UGX 2,000,000</div>
+                </div>
+                <div class="loan-amount-item">
+                  <div class="la-label">Outstanding</div>
+                  <div class="la-value red">UGX 1,850,000</div>
+                </div>
+                <div class="loan-amount-item">
+                  <div class="la-label">Monthly Rate</div>
+                  <div class="la-value gold">3.0% / mo</div>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:var(--gray); margin-bottom:6px;">
+                <span>Repayment Progress</span>
+                <span style="font-weight:700; color:var(--primary);">52%</span>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar" style="width: 52%;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--gray); margin-top:6px;">
+                <span>Started: Jun 2026</span>
+                <span>Ends: Jun 2027 (12 months)</span>
+              </div>
+              <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="payment.html" class="btn btn-green" style="padding:10px 18px; font-size:0.85rem;">💳 Make Payment</a>
+                <button class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef; padding:10px 18px; font-size:0.85rem;" onclick="showSection('repayments')">📅 View Schedule</button>
+              </div>
+            </div>
+
+            <!-- Payment bar chart -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <h3>📊 Monthly Payment History</h3>
+                <span style="font-size:0.75rem; color:var(--gray);">Jun – Nov 2026</span>
+              </div>
+              <div class="dash-card-body">
+                <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; font-size:0.75rem;">
+                  <span><span style="display:inline-block; width:10px; height:10px; background:#16a34a; border-radius:2px; margin-right:4px;"></span>Paid</span>
+                  <span><span style="display:inline-block; width:10px; height:10px; background:#f59e0b; border-radius:2px; margin-right:4px;"></span>Upcoming</span>
+                  <span><span style="display:inline-block; width:10px; height:10px; background:#1a5c2e; border-radius:2px; margin-right:4px;"></span>Scheduled</span>
+                </div>
+                <div class="chart-container" id="paymentChart">
+                  <!-- Bars rendered by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div style="display:flex; flex-direction:column; gap:24px;">
+            <!-- Repayment donut -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <h3>🍩 Loan Breakdown</h3>
+              </div>
+              <div class="dash-card-body">
+                <div class="donut-wrap">
+                  <svg class="donut-svg" width="110" height="110" viewBox="0 0 110 110">
+                    <circle cx="55" cy="55" r="40" fill="none" stroke="#eef2f7" stroke-width="18"/>
+                    <!-- Principal paid: 52% = ~131deg of 251 circumference -->
+                    <circle cx="55" cy="55" r="40" fill="none" stroke="#1a5c2e" stroke-width="18"
+                      stroke-dasharray="130.3 250.9" stroke-dashoffset="62.7" stroke-linecap="round"/>
+                    <!-- Interest portion -->
+                    <circle cx="55" cy="55" r="40" fill="none" stroke="#f5a623" stroke-width="18"
+                      stroke-dasharray="30 250.9" stroke-dashoffset="-67.6" stroke-linecap="round"/>
+                    <text x="55" y="50" text-anchor="middle" font-size="14" font-weight="800" fill="#1e2a3a">52%</text>
+                    <text x="55" y="64" text-anchor="middle" font-size="8" fill="#8a9ab0">paid</text>
+                  </svg>
+                  <div class="donut-legend">
+                    <div class="donut-legend-item">
+                      <div class="donut-legend-color" style="background:#1a5c2e;"></div>
+                      <div>
+                        <div style="font-weight:700; font-size:0.85rem;">Principal Paid</div>
+                        <div style="color:var(--gray); font-size:0.75rem;">UGX 2,000,000</div>
+                      </div>
+                    </div>
+                    <div class="donut-legend-item">
+                      <div class="donut-legend-color" style="background:#f5a623;"></div>
+                      <div>
+                        <div style="font-weight:700; font-size:0.85rem;">Interest Paid</div>
+                        <div style="color:var(--gray); font-size:0.75rem;">UGX 231,000</div>
+                      </div>
+                    </div>
+                    <div class="donut-legend-item">
+                      <div class="donut-legend-color" style="background:#eef2f7;"></div>
+                      <div>
+                        <div style="font-weight:700; font-size:0.85rem;">Remaining</div>
+                        <div style="color:var(--gray); font-size:0.75rem;">UGX 1,850,000</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="dash-card">
+              <div class="dash-card-header">
+                <h3>🔔 Notifications</h3>
+                <a href="#" class="see-all" onclick="showSection('notifications')">See all</a>
+              </div>
+              <div class="dash-card-body" style="padding:14px 26px;">
+                <div class="notif-item">
+                  <div class="notif-dot-icon gold">📅</div>
+                  <div>
+                    <div class="notif-title">Payment Due in 18 Days</div>
+                    <div class="notif-time">UGX 320,000 auto-debit on 28 Oct 2026 — reminder sent 25 Oct</div>
+                  </div>
+                </div>
+                <div class="notif-item">
+                  <div class="notif-dot-icon green">✅</div>
+                  <div>
+                    <div class="notif-title">Payment Received</div>
+                    <div class="notif-time">UGX 320,000 — 15 Sep 2026</div>
+                  </div>
+                </div>
+                <div class="notif-item">
+                  <div class="notif-dot-icon blue">📢</div>
+                  <div>
+                    <div class="notif-title">New Offer Available</div>
+                    <div class="notif-time">You qualify for a top-up loan</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <h3 style="font-size:0.95rem; font-weight:700; color:var(--dark); margin-bottom:16px;">⚡ Quick Actions</h3>
+        <div class="quick-actions">
+          <a href="apply.html" class="quick-action">
+            <div class="qa-icon">📝</div>
+            <div class="qa-label">Apply for Loan</div>
+          </a>
+          <a href="payment.html" class="quick-action">
+            <div class="qa-icon">💳</div>
+            <div class="qa-label">Repay Loan</div>
+          </a>
+          <a href="#" class="quick-action" onclick="showSection('repayments')">
+            <div class="qa-icon">📅</div>
+            <div class="qa-label">View Schedule</div>
+          </a>
+          <a href="#" class="quick-action" onclick="showSection('transactions')">
+            <div class="qa-icon">📋</div>
+            <div class="qa-label">Transactions</div>
+          </a>
+          <a href="#" class="quick-action" onclick="showSection('documents')">
+            <div class="qa-icon">📄</div>
+            <div class="qa-label">Documents</div>
+          </a>
+          <a href="#" class="quick-action" onclick="showSection('support')">
+            <div class="qa-icon">🎧</div>
+            <div class="qa-label">Get Support</div>
+          </a>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3>💳 Recent Transactions</h3>
+            <a href="#" class="see-all" onclick="showSection('transactions')">See all</a>
+          </div>
+          <div class="dash-card-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <table class="txn-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>15 Sep 2026</td>
+                    <td>Monthly Installment #4</td>
+                    <td>MTN MoMo</td>
+                    <td>TXN-MM-48291</td>
+                    <td class="txn-amount credit">+320,000</td>
+                    <td><span class="status-badge paid">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>15 Aug 2026</td>
+                    <td>Monthly Installment #3</td>
+                    <td>Bank Transfer</td>
+                    <td>TXN-BK-37102</td>
+                    <td class="txn-amount credit">+320,000</td>
+                    <td><span class="status-badge paid">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>15 Jul 2026</td>
+                    <td>Monthly Installment #2</td>
+                    <td>Airtel Money</td>
+                    <td>TXN-AM-29847</td>
+                    <td class="txn-amount credit">+320,000</td>
+                    <td><span class="status-badge paid">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>15 Jun 2026</td>
+                    <td>Monthly Installment #1</td>
+                    <td>MTN MoMo</td>
+                    <td>TXN-MM-19342</td>
+                    <td class="txn-amount credit">+1,040,000</td>
+                    <td><span class="status-badge paid">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>1 Jun 2026</td>
+                    <td>Loan Disbursement</td>
+                    <td>MTN MoMo</td>
+                    <td>DSB-FL-1847</td>
+                    <td class="txn-amount debit">-3,850,000</td>
+                    <td><span class="status-badge active">Disbursed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: MY LOANS
+           ============================ -->
+      <div id="section-myloans" style="display:none;">
+        <div class="dash-header">
+          <div><h1>💼 My Loans</h1><p>All your active and past loans in one place.</p></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <!-- Loan 1 -->
+          <div class="loan-progress-card">
+            <div class="loan-progress-header">
+              <div>
+                <div class="loan-progress-title">🏢 Business Loan</div>
+                <div class="loan-progress-ref">Ref: FL-2026-1847 · Disbursed: 1 Jun 2026</div>
+              </div>
+              <span class="status-badge active">Active</span>
+            </div>
+            <div class="loan-amounts">
+              <div class="loan-amount-item"><div class="la-label">Loan Amount</div><div class="la-value">UGX 3,850,000</div></div>
+              <div class="loan-amount-item"><div class="la-label">Outstanding</div><div class="la-value red">UGX 1,850,000</div></div>
+              <div class="loan-amount-item"><div class="la-label">Monthly Rate</div><div class="la-value gold">3.0%</div></div>
+              <div class="loan-amount-item"><div class="la-label">Tenure</div><div class="la-value">12 Months</div></div>
+            </div>
+            <div class="progress-bar-wrap" style="margin-bottom:8px;"><div class="progress-bar" style="width:52%"></div></div>
+            <div style="font-size:0.75rem; color:var(--gray);">52% repaid · Ends Jun 2027</div>
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+              <a href="payment.html" class="btn btn-green" style="padding:10px 18px; font-size:0.85rem;">💳 Repay</a>
+              <button class="btn btn-outline" style="color:var(--dark); border-color:#dde4ef; padding:10px 18px; font-size:0.85rem;" onclick="showSection('repayments')">📅 Schedule</button>
+            </div>
+          </div>
+          <!-- Loan 2 (completed) -->
+          <div class="loan-progress-card" style="border-left: 4px solid var(--success);">
+            <div class="loan-progress-header">
+              <div>
+                <div class="loan-progress-title">👤 Personal Loan</div>
+                <div class="loan-progress-ref">Ref: FL-2025-0932 · Disbursed: 5 Jan 2025</div>
+              </div>
+              <span class="status-badge paid">Completed</span>
+            </div>
+            <div class="loan-amounts">
+              <div class="loan-amount-item"><div class="la-label">Loan Amount</div><div class="la-value">UGX 1,500,000</div></div>
+              <div class="loan-amount-item"><div class="la-label">Total Paid</div><div class="la-value green">UGX 1,680,000</div></div>
+              <div class="loan-amount-item"><div class="la-label">Interest Paid</div><div class="la-value">UGX 180,000</div></div>
+              <div class="loan-amount-item"><div class="la-label">Tenure</div><div class="la-value">6 Months</div></div>
+            </div>
+            <div class="progress-bar-wrap" style="margin-bottom:8px;"><div class="progress-bar" style="width:100%; background:linear-gradient(90deg,#27ae60,#4ade80);"></div></div>
+            <div style="font-size:0.75rem; color:var(--success); font-weight:600;">✅ Fully repaid · Jul 2025</div>
+          </div>
+          <!-- Apply new -->
+          <div style="text-align:center; padding:30px; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); border: 2px dashed #dde4ef;">
+            <div style="font-size:2.5rem; margin-bottom:12px;">➕</div>
+            <h3 style="font-size:1rem; font-weight:700; margin-bottom:8px;">Apply for a New Loan</h3>
+            <p style="font-size:0.85rem; color:var(--gray); margin-bottom:16px;">You qualify for loans up to UGX 30,000,000 based on your repayment history.</p>
+            <a href="apply.html" class="btn btn-primary">Apply Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: REPAYMENT SCHEDULE
+           ============================ -->
+      <div id="section-repayments" style="display:none;">
+        <div class="dash-header">
+          <div><h1>📅 Repayment Schedule</h1><p>Full schedule for your active loan – FL-2026-1847</p></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3>Business Loan – UGX 3,850,000 @ 3.0% / month</h3>
+            <a href="payment.html" class="btn btn-green" style="padding:8px 16px; font-size:0.82rem;">💳 Make Payment</a>
+          </div>
+          <div class="dash-card-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <table class="txn-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Due Date</th>
+                    <th>Principal (UGX)</th>
+                    <th>Interest (UGX)</th>
+                    <th>Total (UGX)</th>
+                    <th>Balance (UGX)</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                  <!-- Generated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: TRANSACTIONS
+           ============================ -->
+      <div id="section-transactions" style="display:none;">
+        <div class="dash-header">
+          <div><h1>💳 All Transactions</h1><p>Complete payment history for your account.</p></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header"><h3>Transaction History</h3></div>
+          <div class="dash-card-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <table class="txn-table">
+                <thead>
+                  <tr><th>Date</th><th>Description</th><th>Method</th><th>Reference</th><th>Amount (UGX)</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>15 Sep 2026</td><td>Installment #4 – FL-2026-1847</td><td>MTN MoMo</td><td>TXN-MM-48291</td><td class="txn-amount credit">+320,000</td><td><span class="status-badge paid">Paid</span></td></tr>
+                  <tr><td>15 Aug 2026</td><td>Installment #3 – FL-2026-1847</td><td>Bank Transfer</td><td>TXN-BK-37102</td><td class="txn-amount credit">+320,000</td><td><span class="status-badge paid">Paid</span></td></tr>
+                  <tr><td>15 Jul 2026</td><td>Installment #2 – FL-2026-1847</td><td>Airtel Money</td><td>TXN-AM-29847</td><td class="txn-amount credit">+320,000</td><td><span class="status-badge paid">Paid</span></td></tr>
+                  <tr><td>15 Jun 2026</td><td>Installment #1 – FL-2026-1847</td><td>MTN MoMo</td><td>TXN-MM-19342</td><td class="txn-amount credit">+1,040,000</td><td><span class="status-badge paid">Paid</span></td></tr>
+                  <tr><td>1 Jun 2026</td><td>Loan Disbursement – FL-2026-1847</td><td>MTN MoMo</td><td>DSB-FL-1847</td><td class="txn-amount debit">-3,850,000</td><td><span class="status-badge active">Disbursed</span></td></tr>
+                  <tr><td>5 Jul 2025</td><td>Final Payment – FL-2025-0932</td><td>Bank Transfer</td><td>TXN-BK-00291</td><td class="txn-amount credit">+280,000</td><td><span class="status-badge paid">Paid</span></td></tr>
+                  <tr><td>5 Jan 2025</td><td>Disbursement – FL-2025-0932</td><td>MTN MoMo</td><td>DSB-FL-0932</td><td class="txn-amount debit">-1,500,000</td><td><span class="status-badge paid">Completed</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: DOCUMENTS
+           ============================ -->
+      <div id="section-documents" style="display:none;">
+        <div class="dash-header"><div><h1>📄 My Documents</h1><p>Download your loan documents and statements.</p></div></div>
+        <div class="dash-card">
+          <div class="dash-card-header"><h3>Available Documents</h3></div>
+          <div class="dash-card-body">
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:#f8fafc; border-radius:8px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                  <div style="font-size:1.8rem;">📄</div>
+                  <div><div style="font-weight:600; font-size:0.9rem;">Loan Agreement – FL-2026-1847</div><div style="font-size:0.77rem; color:var(--gray);">Signed: 1 Jun 2026 · PDF, 142 KB</div></div>
+                </div>
+                <button class="btn btn-outline" style="color:var(--primary); border-color:var(--primary); padding:8px 16px; font-size:0.83rem;">⬇ Download</button>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:#f8fafc; border-radius:8px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                  <div style="font-size:1.8rem;">📊</div>
+                  <div><div style="font-weight:600; font-size:0.9rem;">Account Statement – Sep 2026</div><div style="font-size:0.77rem; color:var(--gray);">Generated: 27 Sep 2026 · PDF, 89 KB</div></div>
+                </div>
+                <button class="btn btn-outline" style="color:var(--primary); border-color:var(--primary); padding:8px 16px; font-size:0.83rem;">⬇ Download</button>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:#f8fafc; border-radius:8px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                  <div style="font-size:1.8rem;">🧾</div>
+                  <div><div style="font-weight:600; font-size:0.9rem;">Repayment Receipts (4)</div><div style="font-size:0.77rem; color:var(--gray);">Jun – Sep 2026 · ZIP, 310 KB</div></div>
+                </div>
+                <button class="btn btn-outline" style="color:var(--primary); border-color:var(--primary); padding:8px 16px; font-size:0.83rem;">⬇ Download</button>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:#f8fafc; border-radius:8px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                  <div style="font-size:1.8rem;">✅</div>
+                  <div><div style="font-weight:600; font-size:0.9rem;">Loan Clearance Letter – FL-2025-0932</div><div style="font-size:0.77rem; color:var(--gray);">Issued: 10 Jul 2025 · PDF, 76 KB</div></div>
+                </div>
+                <button class="btn btn-outline" style="color:var(--primary); border-color:var(--primary); padding:8px 16px; font-size:0.83rem;">⬇ Download</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: NOTIFICATIONS
+           ============================ -->
+      <div id="section-notifications" style="display:none;">
+        <div class="dash-header"><div><h1>🔔 Notifications</h1><p>Stay updated on your loan activities.</p></div></div>
+        <div class="dash-card">
+          <div class="dash-card-body" style="padding:10px 26px;">
+            <div class="notif-item"><div class="notif-dot-icon gold">📅</div><div><div class="notif-title">Upcoming Payment Reminder</div><div class="notif-time">Your installment of UGX 320,000 will be auto-debited on 28 October 2026. SMS reminder sent on 25 Oct 2026.</div><div style="font-size:0.72rem; color:var(--gray); margin-top:4px;">Today, 9:00am</div></div></div>
+            <div class="notif-item"><div class="notif-dot-icon green">✅</div><div><div class="notif-title">Payment Confirmed</div><div class="notif-time">Your payment of UGX 320,000 for September installment was received and applied to your loan.</div><div style="font-size:0.72rem; color:var(--gray); margin-top:4px;">15 Sep 2026, 2:34pm</div></div></div>
+            <div class="notif-item"><div class="notif-dot-icon blue">🎉</div><div><div class="notif-title">Special Offer: Top-Up Loan</div><div class="notif-time">Based on your excellent repayment record, you qualify for a top-up of up to UGX 5,000,000 at 2.5% monthly.</div><div style="font-size:0.72rem; color:var(--gray); margin-top:4px;">20 Sep 2026, 10:00am</div></div></div>
+            <div class="notif-item"><div class="notif-dot-icon green">✅</div><div><div class="notif-title">Payment Confirmed – August</div><div class="notif-time">Your payment of UGX 320,000 for August installment was received.</div><div style="font-size:0.72rem; color:var(--gray); margin-top:4px;">15 Aug 2026, 3:12pm</div></div></div>
+            <div class="notif-item"><div class="notif-dot-icon green">🏦</div><div><div class="notif-title">Loan Disbursed</div><div class="notif-time">UGX 3,850,000 has been sent to your MTN Mobile Money account ending in ***456.</div><div style="font-size:0.72rem; color:var(--gray); margin-top:4px;">1 Jun 2026, 11:20am</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: PROFILE
+           ============================ -->
+      <div id="section-profile" style="display:none;">
+        <div class="dash-header"><div><h1>👤 My Profile</h1><p>Manage your personal and account information.</p></div></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; flex-wrap:wrap;">
+          <div class="dash-card">
+            <div class="dash-card-header"><h3>Personal Information</h3></div>
+            <div class="dash-card-body">
+              <div class="form-group"><label>Full Name</label><input type="text" class="form-control" value="Nakamya Prossy" /></div>
+              <div class="form-group"><label>Phone</label><input type="tel" class="form-control" value="0772 123 456" /></div>
+              <div class="form-group"><label>Email</label><input type="email" class="form-control" value="nakamya@email.com" /></div>
+              <div class="form-group"><label>District</label><input type="text" class="form-control" value="Kampala" /></div>
+              <button class="btn btn-green" style="width:100%; justify-content:center;">Save Changes</button>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-header"><h3>Security</h3></div>
+            <div class="dash-card-body">
+              <div class="form-group"><label>Current Password</label><input type="password" class="form-control" placeholder="••••••••" /></div>
+              <div class="form-group"><label>New Password</label><input type="password" class="form-control" placeholder="••••••••" /></div>
+              <div class="form-group"><label>Confirm Password</label><input type="password" class="form-control" placeholder="••••••••" /></div>
+              <button class="btn btn-green" style="width:100%; justify-content:center;">Update Password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================
+           SECTION: SUPPORT
+           ============================ -->
+      <div id="section-support" style="display:none;">
+        <div class="dash-header"><div><h1>🎧 Customer Support</h1><p>We're here to help. Reach us any time.</p></div></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; flex-wrap:wrap;">
+          <div class="dash-card">
+            <div class="dash-card-header"><h3>Contact Us</h3></div>
+            <div class="dash-card-body">
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div style="display:flex; gap:14px; align-items:center;"><div style="font-size:1.5rem;">📞</div><div><div style="font-weight:600;">Call Us</div><div style="color:var(--gray); font-size:0.85rem;">+256 700 123 456<br/>Mon–Sat 8am–8pm</div></div></div>
+                <div style="display:flex; gap:14px; align-items:center;"><div style="font-size:1.5rem;">📧</div><div><div style="font-weight:600;">Email Us</div><div style="color:var(--gray); font-size:0.85rem;">support@fasterloans.co.ug<br/>Reply within 24 hours</div></div></div>
+                <div style="display:flex; gap:14px; align-items:center;"><div style="font-size:1.5rem;">💬</div><div><div style="font-weight:600;">WhatsApp</div><div style="color:var(--gray); font-size:0.85rem;">+256 772 987 654<br/>Available 24/7</div></div></div>
+                <div style="display:flex; gap:14px; align-items:center;"><div style="font-size:1.5rem;">📍</div><div><div style="font-weight:600;">Visit Us</div><div style="color:var(--gray); font-size:0.85rem;">Plot 42, Kampala Road<br/>Kampala CBD</div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-header"><h3>Send a Message</h3></div>
+            <div class="dash-card-body">
+              <div class="form-group"><label>Subject</label><select class="form-control"><option>Repayment Issue</option><option>Loan Extension Request</option><option>Account Update</option><option>General Inquiry</option></select></div>
+              <div class="form-group"><label>Message</label><textarea class="form-control" rows="4" placeholder="Describe your issue or question..."></textarea></div>
+              <button class="btn btn-green" style="width:100%; justify-content:center;" onclick="alert('Your message has been sent! We will reply within 24 hours.')">📤 Send Message</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const sections = ['overview','myloans','repayments','transactions','documents','notifications','profile','support'];
+    const sectionTitles = {
+      overview:      '📊 Dashboard Overview',
+      myloans:       '💼 My Loans',
+      repayments:    '📅 Repayment Schedule',
+      transactions:  '💳 Transactions',
+      documents:     '📄 Documents',
+      notifications: '🔔 Notifications',
+      profile:       '👤 My Profile',
+      support:       '🎧 Customer Support'
+    };
+
+    function showSection(id) {
+      sections.forEach(s => {
+        document.getElementById('section-' + s).style.display = (s === id) ? 'block' : 'none';
+      });
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-nav a').forEach(a => {
+        a.classList.remove('active');
+        if (a.getAttribute('onclick') && a.getAttribute('onclick').includes(id)) {
+          a.classList.add('active');
+        }
+      });
+      document.getElementById('topBarTitle').textContent = sectionTitles[id] || 'Dashboard';
+      if (id === 'repayments') buildScheduleTable();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Build repayment schedule table
+    function buildScheduleTable() {
+      const principal = 3850000;
+      const rate      = 0.03;
+      const months    = 12;
+      const monthly   = Math.round(principal * rate * Math.pow(1+rate, months) / (Math.pow(1+rate, months)-1));
+      let balance = principal;
+      const tbody = document.getElementById('scheduleTableBody');
+      tbody.innerHTML = '';
+      const startDate = new Date('2026-06-28');
+      for (let i = 1; i <= months; i++) {
+        const interest = Math.round(balance * rate);
+        const princ    = monthly - interest;
+        balance -= princ;
+        if (balance < 0) balance = 0;
+        const d = new Date(startDate);
+        d.setMonth(d.getMonth() + (i-1));
+        const dateStr = d.toLocaleDateString('en-UG', { day:'numeric', month:'short', year:'numeric' });
+        let statusBadge, actionBtn;
+        if (i <= 4) {
+          statusBadge = '<span class="status-badge paid">Paid</span>';
+          actionBtn   = '<span style="font-size:0.75rem; color:var(--success);">✅ Done</span>';
+        } else if (i === 5) {
+          statusBadge = '<span class="status-badge pending">Upcoming</span>';
+          actionBtn   = '<a href="payment.html" class="btn btn-green" style="padding:6px 12px; font-size:0.78rem;">Pay Now</a>';
+        } else {
+          statusBadge = '<span class="status-badge" style="background:#f0f2f5; color:#8a9ab0;">Pending</span>';
+          actionBtn   = '';
+        }
+        tbody.innerHTML += `
+          <tr>
+            <td>${i}</td>
+            <td>${dateStr}</td>
+            <td>${(monthly - interest).toLocaleString()}</td>
+            <td>${interest.toLocaleString()}</td>
+            <td style="font-weight:700;">${monthly.toLocaleString()}</td>
+            <td>${balance > 0 ? balance.toLocaleString() : '0'}</td>
+            <td>${statusBadge}</td>
+            <td>${actionBtn}</td>
+          </tr>`;
+      }
+    }
+
+    // Build bar chart
+    function buildBarChart() {
+      const data = [
+        { label:'Jun', amount: 1040000, type: 'paid' },
+        { label:'Jul', amount: 320000,  type: 'paid' },
+        { label:'Aug', amount: 320000,  type: 'paid' },
+        { label:'Sep', amount: 320000,  type: 'paid' },
+        { label:'Oct', amount: 320000,  type: 'upcoming' },
+        { label:'Nov', amount: 320000,  type: 'scheduled' },
+      ];
+      const max = Math.max(...data.map(d => d.amount));
+      const container = document.getElementById('paymentChart');
+      if (!container) return;
+      container.innerHTML = data.map(d => `
+        <div class="chart-bar-wrap">
+          <div class="chart-value">UGX ${(d.amount/1000).toFixed(0)}K</div>
+          <div class="chart-bar ${d.type}" style="height:${Math.round((d.amount/max)*140)}px;" title="UGX ${d.amount.toLocaleString()}"></div>
+          <div class="chart-label">${d.label}</div>
+        </div>
+      `).join('');
+    }
+
+    // Init on load
+    window.addEventListener('DOMContentLoaded', () => {
+      buildBarChart();
+    });
+  </script>
+</body>
+</html>
